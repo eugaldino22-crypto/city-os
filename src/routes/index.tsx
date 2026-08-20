@@ -1,24 +1,42 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { CitizenHeader } from "@/components/citizen/CitizenHeader";
+import { JourneyGrid } from "@/components/citizen/JourneyGrid";
+import { AIAssistant } from "@/components/ai/AIAssistant";
+import { CityLive } from "@/features/city/CityLive";
+import { ConnectedCityHall } from "@/features/city/ConnectedCityHall";
+import { ProtocolsOverview } from "@/features/protocols/ProtocolsOverview";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+const TITLE = "Gestor.IA — O Sistema Operacional da Cidade";
+const DESCRIPTION =
+  "Portal do Cidadão Gestor.IA: resolva problemas, solicite serviços, acompanhe protocolos e veja sua cidade em tempo real.";
+
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: TITLE },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+    ],
+  }),
+  component: CitizenHome,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function CitizenHome() {
+  const [query, setQuery] = useState("");
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen bg-background pb-16">
+      <CitizenHeader query={query} onQueryChange={setQuery} />
+
+      <main className="mx-auto mt-6 flex max-w-6xl flex-col gap-10 px-4 sm:px-6">
+        <AIAssistant />
+        <JourneyGrid filter={query} />
+        <CityLive />
+        <ConnectedCityHall />
+        <ProtocolsOverview compact />
+      </main>
     </div>
   );
 }

@@ -76,10 +76,6 @@ export function MunicipalityMap({
         );
       }
 
-      /*
-       * Mantemos o cidadão como referência visual,
-       * sem utilizar sua posição para definir o enquadramento.
-       */
       if (
         citizenLatitude != null &&
         citizenLongitude != null
@@ -105,10 +101,6 @@ export function MunicipalityMap({
           .addTo(map);
       }
 
-      /*
-       * Corrige o tamanho do mapa caso o navegador
-       * tenha calculado o container antes da renderização.
-       */
       setTimeout(() => {
         map?.invalidateSize();
       }, 100);
@@ -133,7 +125,7 @@ export function MunicipalityMap({
       ref={containerRef}
       role="application"
       aria-label={title}
-      className="size-full"
+      className="relative z-0 size-full overflow-hidden"
     />
   );
 }

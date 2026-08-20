@@ -198,3 +198,18 @@
     outline-offset: 2px;
   }
 }
+/* Leaflet: mantém todas as camadas do mapa abaixo dos componentes fixos */
+.leaflet-container {
+  position: relative;
+  z-index: 0;
+}
+
+.leaflet-pane,
+.leaflet-control {
+  z-index: 10;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 20;
+}

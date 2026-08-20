@@ -28,13 +28,25 @@ function CitizenHome() {
 
   return (
     <div className="min-h-screen bg-background pb-16">
-      <CitizenHeader query={query} onQueryChange={setQuery} />
+      <CitizenHeader
+        query={query}
+        onQueryChange={setQuery}
+      />
 
       <main className="mx-auto mt-6 flex max-w-6xl flex-col gap-10 px-4 sm:px-6">
-        <AIAssistant />
-        <JourneyGrid filter={query} />
+        {/* CIDADE EM TEMPO REAL */}
         <CityLive />
+
+        {/* ASSISTENTE IA */}
+        <AIAssistant />
+
+        {/* JORNADAS DO CIDADÃO */}
+        <JourneyGrid filter={query} />
+
+        {/* PREFEITURA CONECTADA */}
         <ConnectedCityHall />
+
+        {/* MEUS PROTOCOLOS */}
         <ProtocolsOverview compact />
       </main>
     </div>

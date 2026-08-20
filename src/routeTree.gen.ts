@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProtocolosRouteImport } from './routes/protocolos'
+import { Route as JornadaSlugRouteImport } from './routes/jornada.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProtocolosRoute = ProtocolosRouteImport.update({
+  id: '/protocolos',
+  path: '/protocolos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JornadaSlugRoute = JornadaSlugRouteImport.update({
+  id: '/jornada/$slug',
+  path: '/jornada/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/protocolos': typeof ProtocolosRoute
+  '/jornada/$slug': typeof JornadaSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/protocolos': typeof ProtocolosRoute
+  '/jornada/$slug': typeof JornadaSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/protocolos': typeof ProtocolosRoute
+  '/jornada/$slug': typeof JornadaSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/protocolos' | '/jornada/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/protocolos' | '/jornada/$slug'
+  id: '__root__' | '/' | '/protocolos' | '/jornada/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ProtocolosRoute: typeof ProtocolosRoute
+  JornadaSlugRoute: typeof JornadaSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/protocolos': {
+      id: '/protocolos'
+      path: '/protocolos'
+      fullPath: '/protocolos'
+      preLoaderRoute: typeof ProtocolosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jornada/$slug': {
+      id: '/jornada/$slug'
+      path: '/jornada/$slug'
+      fullPath: '/jornada/$slug'
+      preLoaderRoute: typeof JornadaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ProtocolosRoute: ProtocolosRoute,
+  JornadaSlugRoute: JornadaSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

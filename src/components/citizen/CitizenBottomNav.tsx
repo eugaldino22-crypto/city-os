@@ -9,63 +9,168 @@ import { Link } from "@tanstack/react-router";
 
 export function CitizenBottomNav() {
   return (
-    <nav
+    <footer
       aria-label="Navegação principal do cidadão"
-      className="fixed inset-x-3 bottom-3 z-[1100] sm:inset-x-5 sm:bottom-5"
+      className="
+        fixed inset-x-0 bottom-0 z-[1100]
+        w-full
+        rounded-t-[38px]
+        border border-b-0 border-border
+        bg-white
+        shadow-[0_-18px_50px_-28px_rgba(23,79,44,0.45)]
+      "
     >
-      <div className="mx-auto flex max-w-3xl items-end justify-between rounded-[32px] border border-border bg-white px-2 py-2 shadow-[var(--shadow-lift)] sm:px-4 sm:py-3">
+      <div
+        className="
+          relative mx-auto
+          flex h-[92px] w-full
+          items-end justify-between
+          rounded-t-[38px]
+          bg-white
+          px-2 pb-2
+          sm:h-[96px] sm:px-5
+        "
+      >
+        {/* INÍCIO */}
         <Link
           to="/"
-          className="focus-ring flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-primary transition"
+          className="
+            focus-ring
+            flex h-full min-w-0 flex-1
+            flex-col items-center justify-end
+            gap-1 rounded-2xl
+            px-1 pb-2
+            text-primary
+            transition
+          "
         >
-          <Home className="size-6 sm:size-7" />
-          <span className="text-[10px] font-semibold sm:text-[11px]">
+          <Home
+            className="size-6 sm:size-7"
+            strokeWidth={2}
+          />
+
+          <span className="text-[11px] font-semibold sm:text-xs">
             Início
           </span>
         </Link>
 
+        {/* SOLICITAÇÕES */}
         <Link
           to="/protocolos"
-          className="focus-ring flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-muted-foreground transition hover:text-primary"
+          className="
+            focus-ring
+            flex h-full min-w-0 flex-1
+            flex-col items-center justify-end
+            gap-1 rounded-2xl
+            px-1 pb-2
+            text-muted-foreground
+            transition hover:text-primary
+          "
         >
-          <ListChecks className="size-6 sm:size-7" />
-          <span className="text-[10px] font-medium sm:text-[11px]">
+          <ListChecks
+            className="size-6 sm:size-7"
+            strokeWidth={2}
+          />
+
+          <span className="text-[11px] font-medium sm:text-xs">
             Solicitações
           </span>
         </Link>
 
+        {/* NOVA SOLICITAÇÃO */}
         <Link
           to="/protocolos"
           aria-label="Nova Solicitação"
-          className="focus-ring relative -mt-10 flex size-[68px] shrink-0 items-center justify-center rounded-full bg-primary-deep text-primary-foreground shadow-[0_10px_30px_-8px_rgba(23,79,44,0.55)] transition hover:scale-[1.03] hover:bg-primary active:scale-[0.97] sm:-mt-12 sm:size-[76px]"
+          className="
+            focus-ring
+            relative flex h-full
+            w-[112px] shrink-0
+            flex-col items-center justify-end
+            text-primary-deep
+          "
         >
-          <Plus className="size-9 sm:size-10" strokeWidth={2} />
+          <span
+            className="
+              absolute -top-10
+              grid size-[72px]
+              place-items-center
+              rounded-full
+              bg-primary-deep
+              text-primary-foreground
+              shadow-[0_12px_32px_-8px_rgba(23,79,44,0.60)]
+              transition
+              hover:scale-[1.04]
+              hover:bg-primary
+              active:scale-[0.97]
+            "
+          >
+            <Plus
+              className="size-9 sm:size-10"
+              strokeWidth={2.2}
+            />
+          </span>
 
-          <span className="absolute -bottom-7 whitespace-nowrap text-[11px] font-bold text-primary-deep sm:-bottom-8 sm:text-xs">
+          <span
+            className="
+              mb-1
+              whitespace-nowrap
+              text-[15px]
+              font-bold
+              leading-none
+              text-primary-deep
+              sm:text-base
+            "
+          >
             Nova Solicitação
           </span>
         </Link>
 
+        {/* AVALIAÇÕES */}
         <Link
           to="/"
-          className="focus-ring flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-muted-foreground transition hover:text-primary"
+          className="
+            focus-ring
+            flex h-full min-w-0 flex-1
+            flex-col items-center justify-end
+            gap-1 rounded-2xl
+            px-1 pb-2
+            text-muted-foreground
+            transition hover:text-primary
+          "
         >
-          <Star className="size-6 sm:size-7" />
-          <span className="text-[10px] font-medium sm:text-[11px]">
+          <Star
+            className="size-6 sm:size-7"
+            strokeWidth={2}
+          />
+
+          <span className="text-[11px] font-medium sm:text-xs">
             Avaliações
           </span>
         </Link>
 
+        {/* PERFIL */}
         <Link
           to="/"
-          className="focus-ring flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-muted-foreground transition hover:text-primary"
+          className="
+            focus-ring
+            flex h-full min-w-0 flex-1
+            flex-col items-center justify-end
+            gap-1 rounded-2xl
+            px-1 pb-2
+            text-muted-foreground
+            transition hover:text-primary
+          "
         >
-          <UserRound className="size-6 sm:size-7" />
-          <span className="text-[10px] font-medium sm:text-[11px]">
+          <UserRound
+            className="size-6 sm:size-7"
+            strokeWidth={2}
+          />
+
+          <span className="text-[11px] font-medium sm:text-xs">
             Perfil
           </span>
         </Link>
       </div>
-    </nav>
+    </footer>
   );
 }

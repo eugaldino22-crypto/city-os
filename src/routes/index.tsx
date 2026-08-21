@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { CitizenHeader } from "@/components/citizen/CitizenHeader";
 import { CitizenBottomNav } from "@/components/citizen/CitizenBottomNav";
-import { QuickActions } from "@/components/citizen/QuickActions";
 import { JourneyGrid } from "@/components/citizen/JourneyGrid";
 
 import { AIAssistant } from "@/components/ai/AIAssistant";
@@ -33,7 +32,7 @@ function CitizenHome() {
   const [query, setQuery] = useState("");
 
   return (
-    <div className="relative isolate min-h-screen bg-background pb-[320px] sm:pb-[340px]">
+    <div className="relative isolate min-h-screen bg-background pb-[150px] sm:pb-[170px]">
       <CitizenHeader
         query={query}
         onQueryChange={setQuery}
@@ -66,8 +65,6 @@ function CitizenHome() {
         </section>
       </main>
 
-      {/* ELEMENTOS FIXOS DA EXPERIÊNCIA DO CIDADÃO */}
-      <QuickActions />
       <CitizenBottomNav />
     </div>
   );

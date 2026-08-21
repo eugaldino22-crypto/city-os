@@ -53,7 +53,7 @@ export function CitizenBottomNav() {
           >
             <Home className="size-7" strokeWidth={2} />
 
-            <span className="text-[12px] font-semibold sm:text-sm">
+            <span className="text-[10px] font-semibold truncate sm:text-sm">
               Início
             </span>
           </Link>
@@ -65,7 +65,7 @@ export function CitizenBottomNav() {
           >
             <ListChecks className="size-7" strokeWidth={2} />
 
-            <span className="text-[12px] font-medium sm:text-sm">
+            <span className="text-[10px] font-medium truncate sm:text-sm">
               Solicitações
             </span>
           </Link>
@@ -78,32 +78,35 @@ export function CitizenBottomNav() {
               relative
               flex
               h-full
-              w-[112px]
+              w-[96px]
               shrink-0
               flex-col
               items-center
               justify-end
               pb-3
               text-primary-deep
+              sm:w-[112px]
             "
           >
             <span
               className="
                 absolute
-                -top-[38px]
+                -top-[32px]
                 grid
-                size-[76px]
+                size-[64px]
                 place-items-center
                 rounded-full
                 bg-primary-deep
                 text-primary-foreground
                 shadow-[0_10px_30px_-8px_rgba(23,79,44,0.55)]
+                sm:-top-[38px]
+                sm:size-[76px]
               "
             >
               <Plus className="size-10" strokeWidth={2} />
             </span>
 
-            <span className="whitespace-nowrap text-[14px] font-semibold leading-none sm:text-[15px]">
+            <span className="whitespace-nowrap text-[11px] font-semibold leading-none sm:text-[15px]">
               Nova Solicitação
             </span>
           </Link>
@@ -115,7 +118,7 @@ export function CitizenBottomNav() {
           >
             <Star className="size-7" strokeWidth={2} />
 
-            <span className="text-[12px] font-medium sm:text-sm">
+            <span className="text-[10px] font-medium truncate sm:text-sm">
               Avaliações
             </span>
           </Link>
@@ -127,7 +130,7 @@ export function CitizenBottomNav() {
           >
             <UserRound className="size-7" strokeWidth={2} />
 
-            <span className="text-[12px] font-medium sm:text-sm">
+            <span className="text-[10px] font-medium truncate sm:text-sm">
               Perfil
             </span>
           </Link>

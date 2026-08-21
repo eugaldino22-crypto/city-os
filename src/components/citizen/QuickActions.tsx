@@ -44,17 +44,17 @@ export function QuickActions() {
             <Link
               key={action.title}
               to={action.to}
-              className="flex min-w-0 flex-col items-center text-center"
+              className="flex min-w-0 flex-col items-center px-1 text-center sm:px-0"
             >
-              <span className="grid size-12 place-items-center rounded-[14px] bg-secondary text-primary">
-                <Icon className="size-6" strokeWidth={2} />
+              <span className="grid size-10 place-items-center rounded-[14px] bg-secondary text-primary sm:size-12">
+                <Icon className="size-5 sm:size-6" strokeWidth={2} />
               </span>
 
-              <span className="mt-2 whitespace-nowrap text-[13px] font-bold leading-none text-foreground">
+              <span className="mt-2 w-full text-[11px] font-bold leading-none text-foreground sm:whitespace-nowrap sm:text-[13px]">
                 {action.title}
               </span>
 
-              <span className="mt-2 whitespace-nowrap text-[10px] leading-none text-muted-foreground sm:text-xs">
+              <span className="mt-2 w-full text-[10px] leading-none text-muted-foreground sm:whitespace-nowrap sm:text-xs">
                 {action.description}
               </span>
             </Link>

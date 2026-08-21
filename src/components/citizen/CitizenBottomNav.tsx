@@ -20,10 +20,11 @@ export function CitizenBottomNav() {
         w-full
         rounded-t-[34px]
         bg-white
-        px-5
+        px-3
         pt-7
         pb-5
         shadow-[0_-12px_40px_-24px_rgba(23,79,44,0.35)]
+        sm:px-5
       "
     >
       {/* AÇÕES SUPERIORES */}
@@ -106,7 +107,7 @@ export function CitizenBottomNav() {
               <Plus className="size-10" strokeWidth={2} />
             </span>
 
-            <span className="whitespace-nowrap text-[11px] font-semibold leading-none sm:text-[15px]">
+            <span className="inline-block max-w-full whitespace-nowrap text-[9px] font-semibold leading-none sm:text-[15px]">
               Nova Solicitação
             </span>
           </Link>

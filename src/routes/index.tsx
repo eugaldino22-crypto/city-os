@@ -1,13 +1,19 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+
 import { CitizenHeader } from "@/components/citizen/CitizenHeader";
+import { CitizenBottomNav } from "@/components/citizen/CitizenBottomNav";
+import { QuickActions } from "@/components/citizen/QuickActions";
 import { JourneyGrid } from "@/components/citizen/JourneyGrid";
+
 import { AIAssistant } from "@/components/ai/AIAssistant";
+
 import { CityLive } from "@/features/city/CityLive";
 import { ConnectedCityHall } from "@/features/city/ConnectedCityHall";
 import { ProtocolsOverview } from "@/features/protocols/ProtocolsOverview";
 
 const TITLE = "Gestor.IA — O Sistema Operacional da Cidade";
+
 const DESCRIPTION =
   "Portal do Cidadão Gestor.IA: resolva problemas, solicite serviços, acompanhe protocolos e veja sua cidade em tempo real.";
 
@@ -27,28 +33,42 @@ function CitizenHome() {
   const [query, setQuery] = useState("");
 
   return (
-    <div className="min-h-screen bg-background pb-16">
+    <div className="relative isolate min-h-screen bg-background pb-[320px] sm:pb-[340px]">
       <CitizenHeader
         query={query}
         onQueryChange={setQuery}
       />
 
-      <main className="mx-auto mt-6 flex max-w-6xl flex-col gap-10 px-4 sm:px-6">
-        {/* CIDADE EM TEMPO REAL */}
-        <CityLive />
+      <main className="mx-auto flex max-w-6xl flex-col px-4 sm:px-6">
+        {/* MAPA MUNICIPAL */}
+        <div className="mt-6">
+          <CityLive />
+        </div>
 
         {/* ASSISTENTE IA */}
-        <AIAssistant />
+        <section className="mt-10">
+          <AIAssistant />
+        </section>
 
         {/* JORNADAS DO CIDADÃO */}
-        <JourneyGrid filter={query} />
+        <section className="mt-10">
+          <JourneyGrid filter={query} />
+        </section>
 
         {/* PREFEITURA CONECTADA */}
-        <ConnectedCityHall />
+        <section className="mt-10">
+          <ConnectedCityHall />
+        </section>
 
         {/* MEUS PROTOCOLOS */}
-        <ProtocolsOverview compact />
+        <section className="mt-10">
+          <ProtocolsOverview compact />
+        </section>
       </main>
+
+      {/* ELEMENTOS FIXOS DA EXPERIÊNCIA DO CIDADÃO */}
+      <QuickActions />
+      <CitizenBottomNav />
     </div>
   );
 }

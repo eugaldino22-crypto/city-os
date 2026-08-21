@@ -39,8 +39,8 @@ export function CityLive() {
           {boundary ? (
             <MunicipalityMap
               municipality={boundary}
-              citizenLatitude={coords?.latitude}
-              citizenLongitude={coords?.longitude}
+              citizenLatitude={coords?.latitude ?? null}
+              citizenLongitude={coords?.longitude ?? null}
               title={`Mapa municipal de ${municipality}`}
             />
           ) : (

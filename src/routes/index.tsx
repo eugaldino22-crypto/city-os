@@ -32,7 +32,7 @@ function CitizenHome() {
   const [query, setQuery] = useState("");
 
   return (
-    <div className="relative isolate min-h-screen bg-background pb-[150px] sm:pb-[170px]">
+    <div className="relative isolate min-h-screen bg-background pb-[270px] sm:pb-[290px]">
       <CitizenHeader
         query={query}
         onQueryChange={setQuery}

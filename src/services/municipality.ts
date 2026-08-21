@@ -172,12 +172,10 @@ export async function fetchMunicipalityBoundary(
     return null;
   }
 
-  const [
-    south,
-    north,
-    west,
-    east,
-  ] = municipality.boundingbox.map(Number);
+  const south = Number(municipality.boundingbox[0]);
+  const north = Number(municipality.boundingbox[1]);
+  const west = Number(municipality.boundingbox[2]);
+  const east = Number(municipality.boundingbox[3]);
 
   if (
     ![

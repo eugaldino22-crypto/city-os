@@ -170,63 +170,63 @@ export function CitizenHeader({
           />
         </label>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {/* LOCALIZAÇÃO */}
           <button
             type="button"
             onClick={city.request}
-            className="focus-ring card-premium group min-h-[112px] border-white/10 bg-white/10 p-4 text-left text-primary-foreground backdrop-blur-md hover:bg-white/[0.14] sm:min-h-[118px]"
+            className="focus-ring card-premium group min-h-[76px] border-white/10 bg-white/10 p-3 text-left text-primary-foreground backdrop-blur-md hover:bg-white/[0.14] "
           >
             <div className="flex items-start justify-between">
-              <div className="grid size-10 place-items-center rounded-xl bg-white/10">
-                <LocateFixed className="size-6 text-accent" />
+              <div className="grid size-8 place-items-center rounded-lg bg-white/10">
+                <LocateFixed className="size-5 text-accent" />
               </div>
             </div>
 
-            <p className="mt-3 text-xs font-medium text-primary-foreground/65">
+            <p className="mt-2 text-[11px] font-medium text-primary-foreground/65">
               Sua Cidade
             </p>
 
-            <p className="mt-1 truncate text-sm font-bold text-primary-foreground">
+            <p className="mt-0.5 truncate text-xs font-bold text-primary-foreground">
               {locationLabel}
             </p>
           </button>
 
           {/* CLIMA */}
-          <div className="card-premium min-h-[112px] border-white/10 bg-white/10 p-4 text-primary-foreground backdrop-blur-md sm:min-h-[118px]">
+          <div className="card-premium min-h-[76px] border-white/10 bg-white/10 p-3 text-primary-foreground backdrop-blur-md ">
             <div className="flex items-start justify-between">
-              <div className="grid size-10 place-items-center rounded-xl bg-white/10">
-                <CloudSun className="size-6 text-accent" />
+              <div className="grid size-8 place-items-center rounded-lg bg-white/10">
+                <CloudSun className="size-5 text-accent" />
               </div>
             </div>
 
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-lg font-black">
+            <div className="mt-2 flex items-baseline gap-1">
+              <span className="text-sm font-black">
                 {temperature}
               </span>
 
-              <span className="truncate text-xs font-medium text-primary-foreground/65">
+              <span className="truncate text-[10px] font-medium text-primary-foreground/65">
                 {weatherDescription}
               </span>
             </div>
           </div>
 
           {/* AO VIVO */}
-          <div className="card-premium min-h-[112px] border-white/10 bg-white/10 p-4 text-primary-foreground backdrop-blur-md sm:min-h-[118px]">
+          <div className="card-premium min-h-[76px] border-white/10 bg-white/10 p-3 text-primary-foreground backdrop-blur-md ">
             <div className="flex items-center gap-2">
               <span className="relative flex size-3">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-300 opacity-60" />
                 <span className="relative inline-flex size-3 rounded-full bg-green-400" />
               </span>
 
-              <Radio className="size-5 text-green-300" />
+              <Radio className="size-4 text-green-300" />
             </div>
 
-            <p className="mt-3 text-xs font-bold tracking-[0.12em] text-primary-foreground/70">
+            <p className="mt-2 text-[10px] font-bold tracking-[0.12em] text-primary-foreground/70">
               AO VIVO
             </p>
 
-            <p className="mt-1 text-sm font-bold text-primary-foreground">
+            <p className="mt-0.5 text-xs font-bold text-primary-foreground">
               Atualizado agora
             </p>
           </div>

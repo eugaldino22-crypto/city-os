@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
+import mapboxgl from "mapbox-gl";
 import type { MunicipalityBoundary } from "@/services/municipality";
-import "leaflet/dist/leaflet.css";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 type MunicipalityMapProps = {
   municipality: MunicipalityBoundary;
@@ -8,6 +9,8 @@ type MunicipalityMapProps = {
   citizenLongitude?: number | null;
   title: string;
 };
+
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 export function MunicipalityMap({
   municipality,
@@ -18,107 +21,110 @@ export function MunicipalityMap({
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    let map: import("leaflet").Map | null = null;
+    if (!containerRef.current || !MAPBOX_TOKEN) {
+      return;
+    }
 
-    const initializeMap = async () => {
-      if (!containerRef.current) return;
+    mapboxgl.accessToken = MAPBOX_TOKEN;
 
-      const L = await import("leaflet");
+    const map = new mapboxgl.Map({
+      container: containerRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: [
+        municipality.longitude,
+        municipality.latitude,
+      ],
+      zoom: 15,
+      attributionControl: true,
+    });
 
-      if (!containerRef.current) return;
+    map.addControl(
+      new mapboxgl.NavigationControl(),
+      "top-left",
+    );
 
-      map = L.map(containerRef.current, {
-        zoomControl: true,
-        attributionControl: true,
-        scrollWheelZoom: true,
-        dragging: true,
-        doubleClickZoom: true,
-        boxZoom: true,
-        keyboard: true,
+    map.on("load", () => {
+      const geometry = municipality.geometry;
+
+      map.addSource("municipality-boundary", {
+        type: "geojson",
+        data: geometry as GeoJSON.GeoJsonObject,
       });
 
-      L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          maxZoom: 19,
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      map.addLayer({
+        id: "municipality-fill",
+        type: "fill",
+        source: "municipality-boundary",
+        paint: {
+          "fill-color": "#1F6B3A",
+          "fill-opacity": 0.08,
         },
-      ).addTo(map);
+      });
 
-      const geoJsonLayer = L.geoJSON(
-        municipality.geometry as GeoJSON.GeoJsonObject,
-        {
-          style: {
-            color: "#F4C430",
-            weight: 3,
-            opacity: 1,
-            fillColor: "#1F6B3A",
-            fillOpacity: 0.12,
-          },
+      map.addLayer({
+        id: "municipality-outline",
+        type: "line",
+        source: "municipality-boundary",
+        paint: {
+          "line-color": "#1F6B3A",
+          "line-width": 3,
+          "line-opacity": 0.9,
         },
-      ).addTo(map);
-
-      const bounds = geoJsonLayer.getBounds();
-
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, {
-          padding: [30, 30],
-          maxZoom: 14,
-        });
-      } else {
-        map.setView(
-          [
-            municipality.latitude,
-            municipality.longitude,
-          ],
-          12,
-        );
-      }
+      });
 
       if (
         citizenLatitude != null &&
         citizenLongitude != null
       ) {
-        const citizenMarker = L.circleMarker(
-          [
-            citizenLatitude,
-            citizenLongitude,
-          ],
-          {
-            radius: 7,
-            color: "#FFFFFF",
-            weight: 3,
-            fillColor: "#174F2C",
-            fillOpacity: 1,
-          },
-        );
+        const marker = document.createElement("div");
 
-        citizenMarker
-          .bindTooltip("Você está aqui", {
-            direction: "top",
-          })
+        marker.style.width = "18px";
+        marker.style.height = "18px";
+        marker.style.borderRadius = "9999px";
+        marker.style.background = "#174F2C";
+        marker.style.border = "3px solid #FFFFFF";
+        marker.style.boxShadow =
+          "0 3px 12px rgba(23,79,44,0.35)";
+
+        new mapboxgl.Marker({
+          element: marker,
+        })
+          .setLngLat([
+            citizenLongitude,
+            citizenLatitude,
+          ])
+          .setPopup(
+            new mapboxgl.Popup({
+              offset: 12,
+            }).setText("Você está aqui"),
+          )
           .addTo(map);
       }
+    });
 
-      setTimeout(() => {
-        map?.invalidateSize();
-      }, 100);
-    };
+    const resizeObserver = new ResizeObserver(() => {
+      map.resize();
+    });
 
-    initializeMap();
+    resizeObserver.observe(containerRef.current);
 
     return () => {
-      if (map) {
-        map.remove();
-        map = null;
-      }
+      resizeObserver.disconnect();
+      map.remove();
     };
   }, [
     municipality,
     citizenLatitude,
     citizenLongitude,
   ]);
+
+  if (!MAPBOX_TOKEN) {
+    return (
+      <div className="flex size-full items-center justify-center bg-muted text-sm text-muted-foreground">
+        Mapbox não configurado.
+      </div>
+    );
+  }
 
   return (
     <div

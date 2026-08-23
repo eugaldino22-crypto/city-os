@@ -1,7 +1,4 @@
 import {
-  AlertTriangle,
-  Ambulance,
-  Bug,
   Building2,
   Car,
   Construction,
@@ -249,5 +246,3 @@ export function classifyOccurrence(input: {
       : "Classificação padrão da categoria selecionada.",
   };
 }
-
-export { Ambulance, AlertTriangle, Bug };

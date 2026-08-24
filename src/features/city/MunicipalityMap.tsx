@@ -55,7 +55,7 @@ export function MunicipalityMap({
     map.on("load", () => {
       map.addSource("municipality-boundary", {
         type: "geojson",
-        data: municipality.geometry as GeoJSON.GeoJsonObject,
+        data: municipality.geometry as GeoJSON.Feature | GeoJSON.FeatureCollection | GeoJSON.Geometry,
       });
 
       map.addLayer({

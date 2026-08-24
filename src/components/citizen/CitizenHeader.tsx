@@ -171,66 +171,65 @@ export function CitizenHeader({
         </label>
 
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          {/* LOCALIZAÇÃO */}
+          {/* SUA CIDADE */}
           <button
             type="button"
             onClick={city.request}
-            className="focus-ring card-premium group min-h-[76px] border-white/10 bg-white/10 p-3 text-left text-primary-foreground backdrop-blur-md hover:bg-white/[0.14] "
+            className="focus-ring card-premium flex min-h-[92px] flex-col border-white/10 bg-white/10 p-3 text-left text-primary-foreground backdrop-blur-md hover:bg-white/[0.14]"
           >
-            <div className="flex items-start justify-between">
-              <div className="grid size-8 place-items-center rounded-lg bg-white/10">
-                <LocateFixed className="size-5 text-accent" />
-              </div>
-            </div>
+            <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/10">
+              <LocateFixed className="size-4.5 text-accent" />
+            </span>
 
-            <p className="mt-2 text-[11px] font-medium text-primary-foreground/65">
+            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary-foreground/65">
               Sua Cidade
             </p>
 
-            <p className="mt-0.5 truncate text-xs font-bold text-primary-foreground">
+            <p className="mt-1 truncate text-xs font-bold leading-tight text-primary-foreground">
               {locationLabel}
             </p>
           </button>
 
           {/* CLIMA */}
-          <div className="card-premium min-h-[76px] border-white/10 bg-white/10 p-3 text-primary-foreground backdrop-blur-md ">
-            <div className="flex items-start justify-between">
-              <div className="grid size-8 place-items-center rounded-lg bg-white/10">
-                <CloudSun className="size-5 text-accent" />
-              </div>
-            </div>
+          <div className="card-premium flex min-h-[92px] flex-col border-white/10 bg-white/10 p-3 text-primary-foreground backdrop-blur-md">
+            <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/10">
+              <CloudSun className="size-4.5 text-accent" />
+            </span>
 
-            <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-sm font-black">
-                {temperature}
-              </span>
+            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary-foreground/65">
+              Clima
+            </p>
 
-              <span className="truncate text-[10px] font-medium text-primary-foreground/65">
-                {weatherDescription}
-              </span>
-            </div>
+            <p className="mt-1 text-xs font-bold leading-tight text-primary-foreground">
+              {temperature}
+            </p>
+
+            <p className="mt-0.5 truncate text-[10px] leading-tight text-primary-foreground/65">
+              {weatherDescription}
+            </p>
           </div>
 
           {/* AO VIVO */}
-          <div className="card-premium min-h-[76px] border-white/10 bg-white/10 p-3 text-primary-foreground backdrop-blur-md ">
-            <div className="flex items-center gap-2">
-              <span className="relative flex size-3">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-300 opacity-60" />
-                <span className="relative inline-flex size-3 rounded-full bg-green-400" />
+          <div className="card-premium flex min-h-[92px] flex-col border-white/10 bg-white/10 p-3 text-primary-foreground backdrop-blur-md">
+            <span className="relative grid size-8 shrink-0 place-items-center rounded-lg bg-white/10">
+              <Radio className="size-4.5 text-accent" />
+
+              <span className="absolute right-1 top-1 flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-300 opacity-70" />
+                <span className="relative inline-flex size-2 rounded-full bg-green-400" />
               </span>
+            </span>
 
-              <Radio className="size-4 text-green-300" />
-            </div>
-
-            <p className="mt-2 text-[10px] font-bold tracking-[0.12em] text-primary-foreground/70">
+            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary-foreground/65">
               AO VIVO
             </p>
 
-            <p className="mt-0.5 text-xs font-bold text-primary-foreground">
+            <p className="mt-1 truncate text-xs font-bold leading-tight text-primary-foreground">
               Atualizado agora
             </p>
           </div>
         </div>
+
       </div>
     </header>
   );

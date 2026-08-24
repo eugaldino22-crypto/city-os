@@ -6,6 +6,7 @@ import {
 
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { useCityContext } from "@/hooks/useCityContext";
+import { useOccurrences } from "@/features/occurrences/store";
 import { MunicipalityMap } from "./MunicipalityMap";
 
 export function CityLive() {
@@ -16,6 +17,8 @@ export function CityLive() {
     error,
     request,
   } = useCityContext();
+
+  const occurrences = useOccurrences();
 
   const municipality = place?.city
     ? [place.city, place.state]
@@ -42,7 +45,9 @@ export function CityLive() {
               citizenLatitude={coords?.latitude ?? null}
               citizenLongitude={coords?.longitude ?? null}
               title={`Mapa municipal de ${municipality}`}
+              occurrences={occurrences}
             />
+
           ) : (
             <div className="flex size-full flex-col items-center justify-center gap-3 p-6 text-center">
               <MapPin className="size-8 text-primary" />

@@ -46,6 +46,12 @@ function CitizenHome() {
           <CityLive />
         </div>
 
+        {/* CENTRAL DE OCORRÊNCIAS */}
+        <section className="mt-10">
+          <OccurrenceFeed />
+        </section>
+
+
         {/* ASSISTENTE IA */}
         <section className="mt-10">
           <AIAssistant />

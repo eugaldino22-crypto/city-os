@@ -8,8 +8,10 @@ import { JourneyGrid } from "@/components/citizen/JourneyGrid";
 import { AIAssistant } from "@/components/ai/AIAssistant";
 
 import { CityLive } from "@/features/city/CityLive";
+import { OccurrenceFeed } from "@/features/occurrences/OccurrenceFeed";
 import { ConnectedCityHall } from "@/features/city/ConnectedCityHall";
 import { ProtocolsOverview } from "@/features/protocols/ProtocolsOverview";
+
 
 const TITLE = "Gestor.IA — O Sistema Operacional da Cidade";
 

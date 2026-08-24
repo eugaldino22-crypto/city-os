@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
 import { createRoot, type Root } from "react-dom/client";
 import mapboxgl from "mapbox-gl";
 import type { MunicipalityBoundary } from "@/services/municipality";
@@ -55,7 +56,7 @@ export function MunicipalityMap({
     map.on("load", () => {
       map.addSource("municipality-boundary", {
         type: "geojson",
-        data: municipality.geometry as GeoJSON.Feature | GeoJSON.FeatureCollection | GeoJSON.Geometry,
+        data: municipality.geometry as Feature | FeatureCollection | Geometry,
       });
 
       map.addLayer({

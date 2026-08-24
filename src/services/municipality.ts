@@ -1,4 +1,6 @@
-export type MunicipalityGeometry = GeoJSON.GeoJsonObject;
+import type { GeoJsonObject } from "geojson";
+
+export type MunicipalityGeometry = GeoJsonObject;
 
 export type MunicipalityBoundary = {
   latitude: number;

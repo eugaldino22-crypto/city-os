@@ -47,17 +47,16 @@ export function OccurrenceFeed({
         eyebrow="Central de ocorrências"
         title="Ocorrências da cidade"
         description="Registros enviados pelos cidadãos e acompanhados pela prefeitura."
-        action={
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="focus-ring inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground transition hover:bg-primary-deep active:scale-[0.98] sm:text-sm"
-          >
-            <Plus className="size-4" />
-            Registrar ocorrência
-          </button>
-        }
       />
+
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="focus-ring mb-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition hover:bg-primary-deep active:scale-[0.99] sm:w-auto"
+      >
+        <Plus className="size-4" />
+        Registrar ocorrência
+      </button>
 
       <div className="-mx-1 mb-3 flex gap-2 overflow-x-auto px-1 pb-1">
         {FILTERS.map((item) => (

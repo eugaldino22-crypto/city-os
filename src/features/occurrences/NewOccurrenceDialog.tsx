@@ -4,7 +4,6 @@ import {
   Camera,
   Check,
   Image as ImageIcon,
-  LocateFixed,
   Trash2,
   Video,
 } from "lucide-react";
@@ -17,7 +16,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 import {
@@ -500,6 +498,3 @@ function Row({
     </div>
   );
 }
-
-/** Campo de local manual reutilizado pelo picker. */
-export { Input as ManualLocationInput };

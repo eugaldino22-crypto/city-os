@@ -24,7 +24,11 @@ const FILTERS: { id: "todas" | OccurrenceStatus; label: string }[] = [
   { id: "resolvida", label: "Resolvidas" },
 ];
 
-export function OccurrenceFeed({ cityName }: { cityName?: string | null }) {
+export function OccurrenceFeed({
+  cityName,
+}: {
+  cityName?: string | null | undefined;
+}) {
   const occurrences = useOccurrences();
   const [filter, setFilter] = useState<"todas" | OccurrenceStatus>("todas");
   const [open, setOpen] = useState(false);
@@ -104,7 +108,7 @@ export function OccurrenceCard({
   cityName,
 }: {
   occurrence: Occurrence;
-  cityName?: string | null;
+  cityName?: string | null | undefined;
 }) {
   const occurrenceType = getOccurrenceType(occurrence.typeId);
   const Icon = OCCURRENCE_ICONS[occurrenceType.icon];

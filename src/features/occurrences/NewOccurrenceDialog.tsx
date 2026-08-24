@@ -352,7 +352,7 @@ export function NewOccurrenceDialog({
                 <Row
                   label="Local"
                   value={
-                    location.manualLabel ??
+                    location.manualLabel ||
                     [location.neighborhood, location.municipality]
                       .filter(Boolean)
                       .join(" — ") ||
@@ -407,7 +407,7 @@ export function NewOccurrenceDialog({
                 <Row
                   label="Local"
                   value={
-                    created.location.manualLabel ??
+                    created.location.manualLabel ||
                     [created.location.neighborhood, created.location.municipality]
                       .filter(Boolean)
                       .join(" — ") ||

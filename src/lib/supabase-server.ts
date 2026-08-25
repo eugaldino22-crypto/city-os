@@ -1,13 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 
-type ServerCookie = {
+type CookieData = {
   name: string;
   value: string;
   options?: Record<string, unknown>;
 };
 
-export function createSupabaseServerClient(request: Request) {
+export function createSupabaseServerClient(
+  request: Request,
+  responseHeaders: Headers,
+) {
   const url = import.meta.env.VITE_SUPABASE_URL;
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
@@ -17,26 +20,49 @@ export function createSupabaseServerClient(request: Request) {
 
   return createServerClient<Database>(url, key, {
     cookies: {
-      getAll(): ServerCookie[] {
-        const cookieHeader = request.headers.get("cookie") ?? "";
+      getAll(): CookieData[] {
+        const header = request.headers.get("cookie") ?? "";
 
-        return cookieHeader
+        return header
           .split(";")
-          .map((part) => part.trim())
+          .map((item) => item.trim())
           .filter(Boolean)
-          .map((part) => {
-            const index = part.indexOf("=");
+          .map((item) => {
+            const separator = item.indexOf("=");
 
             return {
-              name: index >= 0 ? part.slice(0, index) : part,
-              value: index >= 0 ? part.slice(index + 1) : "",
+              name:
+                separator >= 0 ? item.slice(0, separator) : item,
+              value:
+                separator >= 0 ? item.slice(separator + 1) : "",
             };
           });
       },
-      setAll(_cookiesToSet) {
-        // O gerenciamento dos Set-Cookie será integrado ao pipeline
-        // de resposta do TanStack Start em uma etapa específica.
+
+      setAll(cookiesToSet, headers) {
+        for (const { name, value, options } of cookiesToSet) {
+          const cookie = [
+            `${name}=${value}`,
+            "Path=/",
+            options?.httpOnly ? "HttpOnly" : "",
+            options?.secure ? "Secure" : "",
+            options?.sameSite
+              ? `SameSite=${String(options.sameSite)}`
+              : "",
+            options?.maxAge != null
+              ? `Max-Age=${String(options.maxAge)}`
+              : "",
+          ]
+            .filter(Boolean)
+            .join("; ");
+
+          responseHeaders.append("Set-Cookie", cookie);
+        }
+
+        for (const [name, value] of Object.entries(headers)) {
+          responseHeaders.set(name, value);
+        }
       },
     },
-  );
+  });
 }

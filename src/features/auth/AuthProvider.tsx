@@ -8,7 +8,9 @@ import {
 } from "react";
 
 import type { User } from "@supabase/supabase-js";
+
 import { supabase } from "@/lib/supabase";
+import { ensureCitizenProfile } from "@/services/citizen";
 
 type AuthContextValue = {
   user: User | null;
@@ -31,17 +33,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    });
+    async function initialize() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!mounted) return;
+
+        setUser(user);
+
+        if (user) {
+          await ensureCitizenProfile();
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void initialize();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+      const nextUser = session?.user ?? null;
+
+      setUser(nextUser);
+
+      if (nextUser) {
+        window.setTimeout(() => {
+          void ensureCitizenProfile();
+        }, 0);
+      }
     });
 
     return () => {
@@ -63,6 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) {
           throw error;
         }
+
+        setUser(null);
       },
     }),
     [user, loading],

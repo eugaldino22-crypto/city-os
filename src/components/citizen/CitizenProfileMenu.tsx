@@ -1,21 +1,7 @@
-import { useRef, useState } from "react";
-import {
-  Bell,
-  Camera,
-  ChevronRight,
-  FileText,
-  LogOut,
-  MapPin,
-  Save,
-  Settings,
-  User,
-} from "lucide-react";
+import { useState } from "react";
+import { Bell, ChevronRight, FileText, LogOut, MapPin, Save, Settings, User } from "lucide-react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import {
   DropdownMenu,
@@ -37,15 +23,14 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/features/auth/AuthProvider";
+import { useNavigate } from "@tanstack/react-router";
 
 type CitizenProfileMenuProps = {
   citizenName?: string;
   cityName?: string;
-  photoUrl?: string;
-  onProfileChange?: (profile: {
-    name: string;
-    photoUrl: string;
-  }) => void;
+  onProfileChange?: (profile: { name: string }) => Promise<void> | void;
+  profileSaving?: boolean;
 
   /*
    * Permite que o sino principal do Header
@@ -70,23 +55,24 @@ function getInitials(name: string) {
 export function CitizenProfileMenu({
   citizenName = "Cidadão",
   cityName = "Localização atual",
-  photoUrl = "",
   onProfileChange,
+  profileSaving = false,
   notificationsOpen: notificationsOpenProp,
   onNotificationsOpenChange,
 }: CitizenProfileMenuProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   const [profileOpen, setProfileOpen] = useState(false);
-  const [internalNotificationsOpen, setInternalNotificationsOpen] =
-    useState(false);
+  const [internalNotificationsOpen, setInternalNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const [editedName, setEditedName] = useState(citizenName);
-  const [editedPhoto, setEditedPhoto] = useState(photoUrl);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
 
-  const notificationsOpen =
-    notificationsOpenProp ?? internalNotificationsOpen;
+  const notificationsOpen = notificationsOpenProp ?? internalNotificationsOpen;
 
   function setNotificationsOpen(open: boolean) {
     if (onNotificationsOpenChange) {
@@ -100,54 +86,36 @@ export function CitizenProfileMenu({
 
   function openProfile() {
     setEditedName(citizenName);
-    setEditedPhoto(photoUrl);
+    setProfileError(null);
     setProfileOpen(true);
   }
 
-  function handlePhotoChange(
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) {
-    const file = event.target.files?.[0];
+  async function saveProfile() {
+    const name = editedName.trim() || "Cidadão";
+    setProfileError(null);
 
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      return;
+    try {
+      await onProfileChange?.({ name });
+      setProfileOpen(false);
+    } catch (error) {
+      setProfileError(
+        error instanceof Error ? error.message : "Não foi possível atualizar o perfil.",
+      );
     }
-
-    /*
-     * Mantemos a imagem original sem compressão.
-     * O limite evita arquivos excessivamente grandes.
-     */
-    if (file.size > 10 * 1024 * 1024) {
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setEditedPhoto(reader.result);
-      }
-    };
-
-    reader.readAsDataURL(file);
-
-    /*
-     * Permite selecionar novamente a mesma imagem.
-     */
-    event.target.value = "";
   }
 
-  function saveProfile() {
-    const name = editedName.trim() || "Cidadão";
+  async function handleSignOut() {
+    setLogoutError(null);
+    setSigningOut(true);
 
-    onProfileChange?.({
-      name,
-      photoUrl: editedPhoto,
-    });
-
-    setProfileOpen(false);
+    try {
+      await signOut();
+      await navigate({ to: "/" });
+    } catch (error) {
+      setLogoutError(error instanceof Error ? error.message : "Não foi possível sair da conta.");
+    } finally {
+      setSigningOut(false);
+    }
   }
 
   return (
@@ -161,14 +129,6 @@ export function CitizenProfileMenu({
             className="focus-ring rounded-full outline-none transition hover:scale-[1.03] active:scale-[0.97]"
           >
             <Avatar className="size-11 overflow-hidden border-2 border-white/80 shadow-lg">
-              {photoUrl ? (
-                <AvatarImage
-                  src={photoUrl}
-                  alt={`Foto de ${citizenName}`}
-                  className="size-full object-cover object-center"
-                />
-              ) : null}
-
               <AvatarFallback className="bg-white text-sm font-bold text-primary-deep">
                 {initials}
               </AvatarFallback>
@@ -184,23 +144,13 @@ export function CitizenProfileMenu({
           <DropdownMenuLabel className="p-3">
             <div className="flex items-center gap-3">
               <Avatar className="size-14 overflow-hidden border border-border">
-                {photoUrl ? (
-                  <AvatarImage
-                    src={photoUrl}
-                    alt={`Foto de ${citizenName}`}
-                    className="size-full object-cover object-center"
-                  />
-                ) : null}
-
                 <AvatarFallback className="bg-primary text-lg font-bold text-primary-foreground">
                   {initials}
                 </AvatarFallback>
               </Avatar>
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-bold text-foreground">
-                  {citizenName}
-                </p>
+                <p className="truncate text-base font-bold text-foreground">{citizenName}</p>
 
                 <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <MapPin className="size-3.5" />
@@ -212,20 +162,14 @@ export function CitizenProfileMenu({
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem
-            onSelect={openProfile}
-            className="cursor-pointer rounded-xl px-3 py-3"
-          >
+          <DropdownMenuItem onSelect={openProfile} className="cursor-pointer rounded-xl px-3 py-3">
             <User className="mr-3 size-4 text-primary" />
             <span className="flex-1">Meu perfil</span>
             <ChevronRight className="size-4 text-muted-foreground" />
           </DropdownMenuItem>
 
           <DropdownMenuItem asChild>
-            <a
-              href="/protocolos"
-              className="flex cursor-pointer rounded-xl px-3 py-3"
-            >
+            <a href="/protocolos" className="flex cursor-pointer rounded-xl px-3 py-3">
               <FileText className="mr-3 size-4 text-primary" />
               <span className="flex-1">Meus protocolos</span>
               <ChevronRight className="size-4 text-muted-foreground" />
@@ -252,14 +196,22 @@ export function CitizenProfileMenu({
 
           <DropdownMenuSeparator />
 
+          {logoutError ? (
+            <p className="px-3 py-2 text-xs text-destructive" role="alert">
+              {logoutError}
+            </p>
+          ) : null}
+
           <DropdownMenuItem
-            onSelect={() => {
-              console.log("Logout solicitado");
+            disabled={signingOut}
+            onSelect={(event) => {
+              event.preventDefault();
+              void handleSignOut();
             }}
             className="cursor-pointer rounded-xl px-3 py-3 text-destructive focus:text-destructive"
           >
             <LogOut className="mr-3 size-4" />
-            <span>Sair</span>
+            <span>{signingOut ? "Saindo…" : "Sair"}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -268,9 +220,7 @@ export function CitizenProfileMenu({
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
         <DialogContent className="max-w-md rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="text-xl">
-              Meu perfil
-            </DialogTitle>
+            <DialogTitle className="text-xl">Meu perfil</DialogTitle>
 
             <DialogDescription>
               Atualize suas informações pessoais do Portal do Cidadão.
@@ -279,60 +229,30 @@ export function CitizenProfileMenu({
 
           <div className="space-y-6 py-4">
             <div className="flex flex-col items-center">
-              <div className="relative">
-                <Avatar className="size-32 overflow-hidden border-4 border-primary/10 shadow-lg">
-                  {editedPhoto ? (
-                    <AvatarImage
-                      src={editedPhoto}
-                      alt="Foto do cidadão"
-                      className="size-full object-cover object-center"
-                    />
-                  ) : null}
-
-                  <AvatarFallback className="bg-primary text-3xl font-bold text-primary-foreground">
-                    {getInitials(editedName)}
-                  </AvatarFallback>
-                </Avatar>
-
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  aria-label="Alterar foto"
-                  className="focus-ring absolute bottom-0 right-0 grid size-11 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:bg-primary/90 active:scale-95"
-                >
-                  <Camera className="size-5" />
-                </button>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handlePhotoChange}
-                />
-              </div>
+              <Avatar className="size-32 overflow-hidden border-4 border-primary/10 shadow-lg">
+                <AvatarFallback className="bg-primary text-3xl font-bold text-primary-foreground">
+                  {getInitials(editedName)}
+                </AvatarFallback>
+              </Avatar>
 
               <p className="mt-3 text-xs text-muted-foreground">
-                Toque na câmera para alterar sua foto
+                A atualização de foto será disponibilizada com upload seguro em uma próxima etapa.
               </p>
             </div>
 
             <div className="space-y-2">
-              <label
-                htmlFor="citizen-name"
-                className="text-sm font-semibold text-foreground"
-              >
+              <label htmlFor="citizen-name" className="text-sm font-semibold text-foreground">
                 Nome completo
               </label>
 
               <Input
                 id="citizen-name"
                 value={editedName}
-                onChange={(event) =>
-                  setEditedName(event.target.value)
-                }
+                onChange={(event) => setEditedName(event.target.value)}
                 placeholder="Digite seu nome"
                 className="h-12 rounded-xl"
+                maxLength={160}
+                disabled={profileSaving}
               />
             </div>
 
@@ -341,16 +261,21 @@ export function CitizenProfileMenu({
                 <MapPin className="mt-0.5 size-5 text-primary" />
 
                 <div>
-                  <p className="text-sm font-semibold">
-                    Localização
-                  </p>
+                  <p className="text-sm font-semibold">Localização</p>
 
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {cityName}
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{cityName}</p>
                 </div>
               </div>
             </div>
+
+            {profileError ? (
+              <p
+                className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
+                role="alert"
+              >
+                {profileError}
+              </p>
+            ) : null}
           </div>
 
           <DialogFooter>
@@ -359,34 +284,31 @@ export function CitizenProfileMenu({
               variant="outline"
               onClick={() => setProfileOpen(false)}
               className="rounded-xl"
+              disabled={profileSaving}
             >
               Cancelar
             </Button>
 
             <Button
               type="button"
-              onClick={saveProfile}
+              onClick={() => void saveProfile()}
               className="rounded-xl"
+              disabled={profileSaving}
             >
               <Save className="mr-2 size-4" />
-              Salvar alterações
+              {profileSaving ? "Salvando…" : "Salvar alterações"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* NOTIFICAÇÕES */}
-      <Dialog
-        open={notificationsOpen}
-        onOpenChange={setNotificationsOpen}
-      >
+      <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
         <DialogContent className="max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle>Notificações</DialogTitle>
 
-            <DialogDescription>
-              Acompanhe avisos importantes da sua cidade.
-            </DialogDescription>
+            <DialogDescription>Acompanhe avisos importantes da sua cidade.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-4">
@@ -397,9 +319,7 @@ export function CitizenProfileMenu({
                 </div>
 
                 <div>
-                  <p className="font-semibold">
-                    Tudo atualizado
-                  </p>
+                  <p className="font-semibold">Tudo atualizado</p>
 
                   <p className="mt-1 text-sm text-muted-foreground">
                     Você não possui novas notificações no momento.
@@ -412,17 +332,12 @@ export function CitizenProfileMenu({
       </Dialog>
 
       {/* CONFIGURAÇÕES */}
-      <Dialog
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-      >
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent className="max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle>Configurações</DialogTitle>
 
-            <DialogDescription>
-              Personalize sua experiência no Portal do Cidadão.
-            </DialogDescription>
+            <DialogDescription>Personalize sua experiência no Portal do Cidadão.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-4">
@@ -431,9 +346,7 @@ export function CitizenProfileMenu({
               className="flex w-full items-center justify-between rounded-2xl border border-border p-4 text-left transition hover:bg-muted"
             >
               <div>
-                <p className="font-semibold">
-                  Privacidade
-                </p>
+                <p className="font-semibold">Privacidade</p>
 
                 <p className="mt-1 text-sm text-muted-foreground">
                   Controle seus dados e permissões.
@@ -448,13 +361,9 @@ export function CitizenProfileMenu({
               className="flex w-full items-center justify-between rounded-2xl border border-border p-4 text-left transition hover:bg-muted"
             >
               <div>
-                <p className="font-semibold">
-                  Preferências
-                </p>
+                <p className="font-semibold">Preferências</p>
 
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Personalize sua experiência.
-                </p>
+                <p className="mt-1 text-sm text-muted-foreground">Personalize sua experiência.</p>
               </div>
 
               <ChevronRight className="size-5 text-muted-foreground" />

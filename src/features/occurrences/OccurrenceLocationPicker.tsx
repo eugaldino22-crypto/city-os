@@ -19,9 +19,7 @@ export function OccurrenceLocationPicker({
   onChange: (location: OccurrenceLocation) => void;
   onConfirm: () => void;
 }) {
-  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "denied">(
-    "idle",
-  );
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "denied">("idle");
   const [error, setError] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -58,11 +56,7 @@ export function OccurrenceLocationPicker({
 
       setStatus("ready");
     } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : "Não foi possível obter sua localização.",
-      );
+      setError(e instanceof Error ? e.message : "Não foi possível obter sua localização.");
       setStatus("denied");
     }
   }
@@ -190,9 +184,7 @@ export function OccurrenceLocationPicker({
           value={location.manualLabel ?? ""}
           maxLength={140}
           placeholder="Rua, bairro, povoado ou ponto de referência"
-          onChange={(event) =>
-            onChange({ ...location, manualLabel: event.target.value })
-          }
+          onChange={(event) => onChange({ ...location, manualLabel: event.target.value })}
           className="mt-2"
         />
       </div>

@@ -32,28 +32,15 @@ export function locationLabel(occurrence: Occurrence, fallbackCity?: string | nu
   return cityLabel ? `${place} — ${cityLabel}` : place;
 }
 
-/**
- * Coordenadas para exibição no mapa.
- * Registros de demonstração usam um deslocamento relativo ao centro do município.
- */
+/** Coordenadas registradas pelo cidadão para exibição no mapa. */
 export function resolveCoordinates(
   occurrence: Occurrence,
-  center: { latitude: number; longitude: number } | null,
+  _center: { latitude: number; longitude: number } | null,
 ): { latitude: number; longitude: number } | null {
   if (occurrence.location.latitude != null && occurrence.location.longitude != null) {
     return {
       latitude: occurrence.location.latitude,
       longitude: occurrence.location.longitude,
-    };
-  }
-
-  const offset = (occurrence as Occurrence & { demoOffset?: [number, number] })
-    .demoOffset;
-
-  if (center && offset) {
-    return {
-      latitude: center.latitude + offset[0],
-      longitude: center.longitude + offset[1],
     };
   }
 

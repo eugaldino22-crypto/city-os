@@ -6,8 +6,7 @@ export function JourneyGrid({ filter = "" }: { filter?: string }) {
   const term = filter.trim().toLowerCase();
   const items = term
     ? journeys.filter(
-        (j) =>
-          j.title.toLowerCase().includes(term) || j.description.toLowerCase().includes(term),
+        (j) => j.title.toLowerCase().includes(term) || j.description.toLowerCase().includes(term),
       )
     : journeys;
 

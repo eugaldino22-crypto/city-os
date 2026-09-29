@@ -1,8 +1,4 @@
-import {
-  AlertTriangle,
-  MapPin,
-  RefreshCcw,
-} from "lucide-react";
+import { AlertTriangle, MapPin, RefreshCcw } from "lucide-react";
 
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { useCityContext } from "@/hooks/useCityContext";
@@ -10,24 +6,15 @@ import { useOccurrences } from "@/features/occurrences/store";
 import { MunicipalityMap } from "./MunicipalityMap";
 
 export function CityLive() {
-  const {
-    status,
-    coords,
-    place,
-    error,
-    request,
-  } = useCityContext();
+  const { status, coords, place, error, request } = useCityContext();
 
-  const occurrences = useOccurrences();
+  const { data: occurrences = [] } = useOccurrences();
 
   const municipality = place?.city
-    ? [place.city, place.state]
-        .filter(Boolean)
-        .join(" · ")
+    ? [place.city, place.state].filter(Boolean).join(" · ")
     : "Sua cidade";
 
-  const boundary =
-    place?.municipality ?? null;
+  const boundary = place?.municipality ?? null;
 
   return (
     <section aria-labelledby="cidade-tempo-real">
@@ -47,7 +34,6 @@ export function CityLive() {
               title={`Mapa municipal de ${municipality}`}
               occurrences={occurrences}
             />
-
           ) : (
             <div className="flex size-full flex-col items-center justify-center gap-3 p-6 text-center">
               <MapPin className="size-8 text-primary" />
@@ -55,8 +41,7 @@ export function CityLive() {
               <p className="max-w-sm text-sm text-muted-foreground">
                 {status === "loading"
                   ? "Identificando seu município e carregando o mapa municipal…"
-                  : (error ??
-                    "Permita o acesso à localização para identificar sua cidade.")}
+                  : (error ?? "Permita o acesso à localização para identificar sua cidade.")}
               </p>
 
               <button
@@ -74,9 +59,7 @@ export function CityLive() {
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border p-4">
           <div>
             <p className="text-sm font-semibold text-foreground">
-              {place?.city
-                ? municipality
-                : "Município identificado automaticamente"}
+              {place?.city ? municipality : "Município identificado automaticamente"}
             </p>
 
             <p className="mt-1 text-xs text-muted-foreground">

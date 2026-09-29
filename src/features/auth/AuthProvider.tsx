@@ -1,16 +1,7 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import type { User } from "@supabase/supabase-js";
-
 import { supabase } from "@/lib/supabase";
-import { ensureCitizenProfile } from "@/services/citizen";
 
 type AuthContextValue = {
   user: User | null;
@@ -26,47 +17,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!supabase) {
+    const client = supabase;
+
+    if (!client) {
       setLoading(false);
       return;
     }
 
     let mounted = true;
 
-    async function initialize() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+    const loadSession = async () => {
+      const {
+        data: { session },
+        error,
+      } = await client.auth.getSession();
 
-        if (!mounted) return;
+      if (!mounted) return;
 
-        setUser(user);
-
-        if (user) {
-          await ensureCitizenProfile();
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+      if (error) {
+        console.error("Erro ao carregar sessão do Supabase:", error);
+        setUser(null);
+      } else {
+        setUser(session?.user ?? null);
       }
-    }
 
-    void initialize();
+      setLoading(false);
+    };
+
+    void loadSession();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const nextUser = session?.user ?? null;
+    } = client.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
 
-      setUser(nextUser);
-
-      if (nextUser) {
-        window.setTimeout(() => {
-          void ensureCitizenProfile();
-        }, 0);
-      }
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => {
@@ -80,10 +66,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       configured: Boolean(supabase),
-      signOut: async () => {
-        if (!supabase) return;
 
-        const { error } = await supabase.auth.signOut();
+      signOut: async () => {
+        const client = supabase;
+        if (!client) return;
+
+        const { error } = await client.auth.signOut();
 
         if (error) {
           throw error;
@@ -95,11 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user, loading],
   );
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

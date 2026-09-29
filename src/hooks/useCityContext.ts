@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { getCurrentPosition, reverseGeocode, type Coordinates, type PlaceInfo } from "@/services/location";
+import {
+  getCurrentPosition,
+  reverseGeocode,
+  type Coordinates,
+  type PlaceInfo,
+} from "@/services/location";
 import { fetchWeather, type Weather } from "@/services/weather";
 
 export type CityContextState = {

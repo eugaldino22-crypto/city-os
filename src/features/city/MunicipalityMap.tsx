@@ -92,9 +92,7 @@ export function MunicipalityMap({
 
         new mapboxgl.Marker({ element: marker })
           .setLngLat([citizenLongitude, citizenLatitude])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 12 }).setText("Você está aqui"),
-          )
+          .setPopup(new mapboxgl.Popup({ offset: 12 }).setText("Você está aqui"))
           .addTo(map);
       }
     });

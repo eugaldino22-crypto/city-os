@@ -1,7 +1,4 @@
-import {
-  fetchMunicipalityBoundary,
-  type MunicipalityBoundary,
-} from "@/services/municipality";
+import { fetchMunicipalityBoundary, type MunicipalityBoundary } from "@/services/municipality";
 
 export type Coordinates = {
   latitude: number;
@@ -32,15 +29,8 @@ export type PlaceInfo = {
  */
 export function getCurrentPosition(): Promise<Coordinates> {
   return new Promise((resolve, reject) => {
-    if (
-      typeof navigator === "undefined" ||
-      !navigator.geolocation
-    ) {
-      reject(
-        new Error(
-          "Geolocalização indisponível neste dispositivo.",
-        ),
-      );
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      reject(new Error("Geolocalização indisponível neste dispositivo."));
       return;
     }
 
@@ -50,13 +40,7 @@ export function getCurrentPosition(): Promise<Coordinates> {
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
         }),
-      (err) =>
-        reject(
-          new Error(
-            err.message ||
-              "Não foi possível obter sua localização.",
-          ),
-        ),
+      (err) => reject(new Error(err.message || "Não foi possível obter sua localização.")),
       {
         enableHighAccuracy: true,
         timeout: 12000,
@@ -75,10 +59,7 @@ export function getCurrentPosition(): Promise<Coordinates> {
  * ↓
  * Limite geográfico do município
  */
-export async function reverseGeocode({
-  latitude,
-  longitude,
-}: Coordinates): Promise<PlaceInfo> {
+export async function reverseGeocode({ latitude, longitude }: Coordinates): Promise<PlaceInfo> {
   const url =
     `https://api.bigdatacloud.net/data/reverse-geocode-client` +
     `?latitude=${latitude}` +
@@ -88,9 +69,7 @@ export async function reverseGeocode({
   const res = await fetch(url);
 
   if (!res.ok) {
-    throw new Error(
-      "Falha ao identificar o município.",
-    );
+    throw new Error("Falha ao identificar o município.");
   }
 
   const data = (await res.json()) as {
@@ -101,29 +80,17 @@ export async function reverseGeocode({
     countryName?: string;
   };
 
-  const city =
-    data.city ||
-    data.locality ||
-    null;
+  const city = data.city || data.locality || null;
 
-  const state =
-    data.principalSubdivisionCode?.split("-")[1] ||
-    data.principalSubdivision ||
-    null;
+  const state = data.principalSubdivisionCode?.split("-")[1] || data.principalSubdivision || null;
 
-  const country =
-    data.countryName ||
-    null;
+  const country = data.countryName || null;
 
   let municipality = null;
 
   if (city && state) {
     try {
-      municipality =
-        await fetchMunicipalityBoundary(
-          city,
-          state,
-        );
+      municipality = await fetchMunicipalityBoundary(city, state);
     } catch {
       municipality = null;
     }
@@ -134,13 +101,9 @@ export async function reverseGeocode({
     state,
     country,
 
-    latitude:
-      municipality?.latitude ??
-      latitude,
+    latitude: municipality?.latitude ?? latitude,
 
-    longitude:
-      municipality?.longitude ??
-      longitude,
+    longitude: municipality?.longitude ?? longitude,
 
     municipality,
   };

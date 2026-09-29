@@ -1,12 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ArrowLeft,
-  Camera,
-  Check,
-  Image as ImageIcon,
-  Trash2,
-  Video,
-} from "lucide-react";
+import { ArrowLeft, Camera, Check, Image as ImageIcon, Trash2, Video } from "lucide-react";
 
 import {
   Dialog,
@@ -29,7 +22,7 @@ import {
   classifyOccurrence,
   getOccurrenceType,
 } from "./catalog";
-import { addOccurrence } from "./store";
+import { useAddOccurrence } from "./store";
 import type { Occurrence, OccurrenceLocation, OccurrenceMedia } from "./types";
 import { OccurrenceLocationPicker } from "./OccurrenceLocationPicker";
 
@@ -59,6 +52,8 @@ export function NewOccurrenceDialog({
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState<OccurrenceLocation>(EMPTY_LOCATION);
   const [created, setCreated] = useState<Occurrence | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const addOccurrence = useAddOccurrence();
 
   const cameraRef = useRef<HTMLInputElement | null>(null);
   const galleryRef = useRef<HTMLInputElement | null>(null);
@@ -74,6 +69,7 @@ export function NewOccurrenceDialog({
       setDescription("");
       setLocation(EMPTY_LOCATION);
       setCreated(null);
+      setSubmissionError(null);
     }, 200);
 
     return () => clearTimeout(timeout);
@@ -82,35 +78,47 @@ export function NewOccurrenceDialog({
   const occurrenceType = typeId ? getOccurrenceType(typeId) : null;
 
   const classification = useMemo(
-    () =>
-      typeId
-        ? classifyOccurrence({ typeId, description })
-        : null,
+    () => (typeId ? classifyOccurrence({ typeId, description }) : null),
     [typeId, description],
   );
 
   function handleFile(file: File | undefined, kind: OccurrenceMedia["kind"]) {
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setMedia({ kind, dataUrl: String(reader.result) });
-    };
-    reader.readAsDataURL(file);
+    setMedia({
+      kind,
+      file,
+      mimeType: file.type,
+      url: URL.createObjectURL(file),
+    });
   }
 
-  function submit() {
+  async function submit() {
     if (!typeId) return;
 
-    const occurrence = addOccurrence({
-      typeId,
-      description,
-      media,
-      location,
-    });
+    setSubmissionError(null);
+    try {
+      const result = await addOccurrence.mutateAsync({
+        typeId,
+        description,
+        media,
+        location,
+      });
 
-    setCreated(occurrence);
-    setStep("protocolo");
+      setCreated(result.occurrence);
+      setSubmissionError(
+        result.mediaError
+          ? "A ocorrência e o protocolo foram criados, mas não foi possível salvar a mídia anexada."
+          : null,
+      );
+      setStep("protocolo");
+    } catch (error) {
+      setSubmissionError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível registrar a ocorrência. Tente novamente.",
+      );
+    }
   }
 
   const back: Record<Step, Step | null> = {
@@ -139,9 +147,7 @@ export function NewOccurrenceDialog({
             ) : null}
 
             <div className="min-w-0">
-              <DialogTitle className="text-base font-bold">
-                Registrar ocorrência
-              </DialogTitle>
+              <DialogTitle className="text-base font-bold">Registrar ocorrência</DialogTitle>
 
               <DialogDescription className="text-xs">
                 {step === "protocolo"
@@ -163,9 +169,7 @@ export function NewOccurrenceDialog({
                   </p>
 
                   <div className="mt-2 grid grid-cols-2 gap-2">
-                    {OCCURRENCE_TYPES.filter(
-                      (item) => item.groupId === group.id,
-                    ).map((item) => {
+                    {OCCURRENCE_TYPES.filter((item) => item.groupId === group.id).map((item) => {
                       const Icon = OCCURRENCE_ICONS[item.icon];
                       const active = typeId === item.id;
 
@@ -211,16 +215,12 @@ export function NewOccurrenceDialog({
                 <div className="overflow-hidden rounded-2xl border border-border">
                   {media.kind === "photo" ? (
                     <img
-                      src={media.dataUrl}
+                      src={media.url}
                       alt="Prévia da mídia da ocorrência"
                       className="max-h-64 w-full object-cover"
                     />
                   ) : (
-                    <video
-                      src={media.dataUrl}
-                      controls
-                      className="max-h-64 w-full bg-black"
-                    />
+                    <video src={media.url} controls className="max-h-64 w-full bg-black" />
                   )}
 
                   <button
@@ -258,9 +258,7 @@ export function NewOccurrenceDialog({
                 accept="image/*"
                 capture="environment"
                 className="hidden"
-                onChange={(event) =>
-                  handleFile(event.target.files?.[0], "photo")
-                }
+                onChange={(event) => handleFile(event.target.files?.[0], "photo")}
               />
               <input
                 ref={videoRef}
@@ -268,23 +266,17 @@ export function NewOccurrenceDialog({
                 accept="video/*"
                 capture="environment"
                 className="hidden"
-                onChange={(event) =>
-                  handleFile(event.target.files?.[0], "video")
-                }
+                onChange={(event) => handleFile(event.target.files?.[0], "video")}
               />
               <input
                 ref={galleryRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(event) =>
-                  handleFile(event.target.files?.[0], "photo")
-                }
+                onChange={(event) => handleFile(event.target.files?.[0], "photo")}
               />
 
-              <PrimaryButton onClick={() => setStep("descricao")}>
-                Continuar
-              </PrimaryButton>
+              <PrimaryButton onClick={() => setStep("descricao")}>Continuar</PrimaryButton>
             </div>
           ) : null}
 
@@ -325,9 +317,7 @@ export function NewOccurrenceDialog({
                 </div>
               ) : null}
 
-              <PrimaryButton onClick={() => setStep("local")}>
-                Continuar
-              </PrimaryButton>
+              <PrimaryButton onClick={() => setStep("local")}>Continuar</PrimaryButton>
             </div>
           ) : null}
 
@@ -345,17 +335,12 @@ export function NewOccurrenceDialog({
             <div className="space-y-4">
               <div className="card-premium space-y-3 p-4">
                 <Row label="Categoria" value={occurrenceType.label} />
-                <Row
-                  label="Descrição"
-                  value={description.trim() || "Sem descrição"}
-                />
+                <Row label="Descrição" value={description.trim() || "Sem descrição"} />
                 <Row
                   label="Local"
                   value={
                     location.manualLabel ||
-                    [location.neighborhood, location.municipality]
-                      .filter(Boolean)
-                      .join(" — ") ||
+                    [location.neighborhood, location.municipality].filter(Boolean).join(" — ") ||
                     (location.latitude != null
                       ? `${location.latitude.toFixed(5)}, ${location.longitude?.toFixed(5)}`
                       : "Não informado")
@@ -366,19 +351,23 @@ export function NewOccurrenceDialog({
                   value={PRIORITY_LABELS[classification.priority]}
                   color={PRIORITY_COLORS[classification.priority]}
                 />
-                <Row
-                  label="Encaminhamento"
-                  value={AGENCIES[classification.agency]}
-                />
+                <Row label="Encaminhamento" value={AGENCIES[classification.agency]} />
               </div>
 
               <p className="text-[11px] leading-relaxed text-muted-foreground">
-                Classificação preliminar por regras locais, preparada para
-                análise por IA em etapas futuras. O registro não aciona
-                automaticamente serviços de emergência.
+                Classificação preliminar por regras locais, preparada para análise por IA em etapas
+                futuras. O registro não aciona automaticamente serviços de emergência.
               </p>
 
-              <PrimaryButton onClick={submit}>Enviar ocorrência</PrimaryButton>
+              {submissionError ? (
+                <p className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+                  {submissionError}
+                </p>
+              ) : null}
+
+              <PrimaryButton onClick={submit} disabled={addOccurrence.isPending}>
+                {addOccurrence.isPending ? "Enviando…" : "Enviar ocorrência"}
+              </PrimaryButton>
             </div>
           ) : null}
 
@@ -395,15 +384,18 @@ export function NewOccurrenceDialog({
                 </p>
 
                 <p className="mt-1 text-2xl font-black tracking-tight text-primary">
-                  {created.protocol}
+                  {created.protocol ?? "Protocolo indisponível"}
                 </p>
               </div>
 
+              {submissionError ? (
+                <p className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-left text-xs text-destructive">
+                  {submissionError}
+                </p>
+              ) : null}
+
               <div className="card-premium space-y-3 p-4 text-left">
-                <Row
-                  label="Categoria"
-                  value={getOccurrenceType(created.typeId).label}
-                />
+                <Row label="Categoria" value={getOccurrenceType(created.typeId).label} />
                 <Row
                   label="Local"
                   value={
@@ -414,10 +406,7 @@ export function NewOccurrenceDialog({
                     "Não informado"
                   }
                 />
-                <Row
-                  label="Data"
-                  value={new Date(created.createdAt).toLocaleString("pt-BR")}
-                />
+                <Row label="Data" value={new Date(created.createdAt).toLocaleString("pt-BR")} />
                 <Row label="Status" value={STATUS_LABELS[created.status]} />
                 <Row
                   label="Prioridade"
@@ -426,9 +415,7 @@ export function NewOccurrenceDialog({
                 />
               </div>
 
-              <PrimaryButton onClick={() => onOpenChange(false)}>
-                Concluir
-              </PrimaryButton>
+              <PrimaryButton onClick={() => onOpenChange(false)}>Concluir</PrimaryButton>
             </div>
           ) : null}
         </div>
@@ -461,30 +448,25 @@ function MediaButton({
 function PrimaryButton({
   children,
   onClick,
+  disabled = false,
 }: {
   children: React.ReactNode;
-  onClick: () => void;
+  onClick: () => void | Promise<void>;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="focus-ring w-full rounded-2xl bg-primary px-4 py-3.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-deep active:scale-[0.99]"
+      disabled={disabled}
+      className="focus-ring w-full rounded-2xl bg-primary px-4 py-3.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-deep active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
     >
       {children}
     </button>
   );
 }
 
-function Row({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string;
-  color?: string;
-}) {
+function Row({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <span className="text-xs text-muted-foreground">{label}</span>

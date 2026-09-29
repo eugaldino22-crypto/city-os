@@ -12,7 +12,6 @@ import { OccurrenceFeed } from "@/features/occurrences/OccurrenceFeed";
 import { ConnectedCityHall } from "@/features/city/ConnectedCityHall";
 import { ProtocolsOverview } from "@/features/protocols/ProtocolsOverview";
 
-
 const TITLE = "Gestor.IA — O Sistema Operacional da Cidade";
 
 const DESCRIPTION =
@@ -35,10 +34,7 @@ function CitizenHome() {
 
   return (
     <div className="relative isolate min-h-screen bg-background pb-[300px] sm:pb-[290px]">
-      <CitizenHeader
-        query={query}
-        onQueryChange={setQuery}
-      />
+      <CitizenHeader query={query} onQueryChange={setQuery} />
 
       <main className="mx-auto flex max-w-6xl flex-col px-4 sm:px-6">
         {/* MAPA MUNICIPAL */}
@@ -50,7 +46,6 @@ function CitizenHome() {
         <section className="mt-10">
           <OccurrenceFeed />
         </section>
-
 
         {/* ASSISTENTE IA */}
         <section className="mt-10">

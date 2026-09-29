@@ -70,24 +70,18 @@ export async function fetchMunicipalityBoundary(
     countrycodes: "br",
   });
 
-  const response = await fetch(
-    `https://nominatim.openstreetmap.org/search?${params.toString()}`,
-    {
-      headers: {
-        Accept: "application/json",
-        "Accept-Language": "pt-BR",
-      },
+  const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
+    headers: {
+      Accept: "application/json",
+      "Accept-Language": "pt-BR",
     },
-  );
+  });
 
   if (!response.ok) {
-    throw new Error(
-      "Não foi possível obter os limites do município.",
-    );
+    throw new Error("Não foi possível obter os limites do município.");
   }
 
-  const results =
-    (await response.json()) as NominatimResult[];
+  const results = (await response.json()) as NominatimResult[];
 
   /*
    * Primeiro tentamos encontrar exatamente
@@ -100,17 +94,11 @@ export async function fetchMunicipalityBoundary(
       result.address?.town ??
       result.address?.village;
 
-    const normalizedAddress =
-      normalize(addressName);
+    const normalizedAddress = normalize(addressName);
 
-    const country =
-      normalize(result.address?.country_code);
+    const country = normalize(result.address?.country_code);
 
-    return (
-      normalizedAddress === normalizedCity &&
-      country === "br" &&
-      Boolean(result.geojson)
-    );
+    return normalizedAddress === normalizedCity && country === "br" && Boolean(result.geojson);
   });
 
   /*
@@ -120,17 +108,11 @@ export async function fetchMunicipalityBoundary(
   const nameMatch =
     exactMatch ??
     results.find((result) => {
-      const displayName =
-        normalize(result.display_name);
+      const displayName = normalize(result.display_name);
 
-      const country =
-        normalize(result.address?.country_code);
+      const country = normalize(result.address?.country_code);
 
-      return (
-        country === "br" &&
-        displayName.includes(normalizedCity) &&
-        Boolean(result.geojson)
-      );
+      return country === "br" && displayName.includes(normalizedCity) && Boolean(result.geojson);
     });
 
   /*
@@ -152,25 +134,15 @@ export async function fetchMunicipalityBoundary(
     return null;
   }
 
-  const latitude = Number(
-    municipality.lat,
-  );
+  const latitude = Number(municipality.lat);
 
-  const longitude = Number(
-    municipality.lon,
-  );
+  const longitude = Number(municipality.lon);
 
-  if (
-    !Number.isFinite(latitude) ||
-    !Number.isFinite(longitude)
-  ) {
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
     return null;
   }
 
-  if (
-    !municipality.boundingbox ||
-    municipality.boundingbox.length !== 4
-  ) {
+  if (!municipality.boundingbox || municipality.boundingbox.length !== 4) {
     return null;
   }
 
@@ -179,27 +151,14 @@ export async function fetchMunicipalityBoundary(
   const west = Number(municipality.boundingbox[2]);
   const east = Number(municipality.boundingbox[3]);
 
-  if (
-    ![
-      south,
-      north,
-      west,
-      east,
-    ].every(Number.isFinite)
-  ) {
+  if (![south, north, west, east].every(Number.isFinite)) {
     return null;
   }
 
   return {
     latitude,
     longitude,
-    boundingBox: [
-      south,
-      north,
-      west,
-      east,
-    ],
-    geometry:
-      municipality.geojson,
+    boundingBox: [south, north, west, east],
+    geometry: municipality.geojson,
   };
 }

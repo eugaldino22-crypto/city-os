@@ -111,7 +111,14 @@ export const OCCURRENCE_TYPES: OccurrenceType[] = [
     "Cavalo solto próximo à entrada da cidade.",
     "Animal solto oferecendo risco aos motoristas.",
   ]),
-  type("animal-ferido", "Animal ferido ou abandonado", "emergencia", "animal", "protecao_animal", "media"),
+  type(
+    "animal-ferido",
+    "Animal ferido ou abandonado",
+    "emergencia",
+    "animal",
+    "protecao_animal",
+    "media",
+  ),
   type("risco", "Situação de risco", "emergencia", "risco", "defesa_civil", "critica", [
     "Estrutura ameaçando desabar.",
     "Risco de deslizamento no barranco.",
@@ -123,19 +130,54 @@ export const OCCURRENCE_TYPES: OccurrenceType[] = [
   type("buraco", "Buraco na via", "infraestrutura", "buraco", "obras", "media", [
     "Buraco grande no meio da pista.",
   ]),
-  type("rua-danificada", "Rua danificada / pavimentação", "infraestrutura", "via", "obras", "media"),
+  type(
+    "rua-danificada",
+    "Rua danificada / pavimentação",
+    "infraestrutura",
+    "via",
+    "obras",
+    "media",
+  ),
   type("calcada", "Calçada ou meio-fio danificado", "infraestrutura", "calcada", "obras", "baixa"),
-  type("sinalizacao", "Sinalização danificada", "infraestrutura", "sinalizacao", "transito", "media"),
+  type(
+    "sinalizacao",
+    "Sinalização danificada",
+    "infraestrutura",
+    "sinalizacao",
+    "transito",
+    "media",
+  ),
   type("semaforo", "Semáforo com defeito", "infraestrutura", "semaforo", "transito", "alta"),
   type("obstrucao", "Obstrução ou interdição da via", "infraestrutura", "via", "transito", "alta"),
-  type("veiculo-abandonado", "Veículo abandonado", "infraestrutura", "acidente", "transito", "baixa"),
-  type("ponte", "Ponte ou estrutura danificada", "infraestrutura", "risco", "infraestrutura", "alta"),
+  type(
+    "veiculo-abandonado",
+    "Veículo abandonado",
+    "infraestrutura",
+    "acidente",
+    "transito",
+    "baixa",
+  ),
+  type(
+    "ponte",
+    "Ponte ou estrutura danificada",
+    "infraestrutura",
+    "risco",
+    "infraestrutura",
+    "alta",
+  ),
 
   // ILUMINAÇÃO
   type("lampada", "Lâmpada apagada", "iluminacao", "lampada", "iluminacao", "baixa", [
     "Poste apagado há alguns dias na minha rua.",
   ]),
-  type("iluminacao-piscando", "Iluminação piscando", "iluminacao", "lampada", "iluminacao", "baixa"),
+  type(
+    "iluminacao-piscando",
+    "Iluminação piscando",
+    "iluminacao",
+    "lampada",
+    "iluminacao",
+    "baixa",
+  ),
   type("poste", "Poste danificado", "iluminacao", "poste", "iluminacao", "alta"),
   type("sem-iluminacao", "Área sem iluminação", "iluminacao", "lampada", "iluminacao", "media"),
 
@@ -148,7 +190,14 @@ export const OCCURRENCE_TYPES: OccurrenceType[] = [
   type("lixo", "Lixo acumulado", "ambiente", "lixo", "limpeza_urbana", "media", [
     "Lixo acumulado na esquina há vários dias.",
   ]),
-  type("descarte", "Descarte irregular / entulho", "ambiente", "entulho", "limpeza_urbana", "media"),
+  type(
+    "descarte",
+    "Descarte irregular / entulho",
+    "ambiente",
+    "entulho",
+    "limpeza_urbana",
+    "media",
+  ),
   type("alagamento", "Alagamento ou enchente", "ambiente", "alagamento", "defesa_civil", "alta"),
   type("queimada", "Queimada ou poluição", "ambiente", "incendio", "meio_ambiente", "alta"),
 
@@ -159,11 +208,25 @@ export const OCCURRENCE_TYPES: OccurrenceType[] = [
   type("praca", "Praça ou parque", "servicos", "praca", "administracao", "baixa"),
   type("escola", "Escola", "servicos", "escola", "educacao", "media"),
   type("unidade-saude", "Unidade de saúde", "servicos", "saude", "saude", "media"),
-  type("equipamento", "Equipamento público danificado", "servicos", "equipamento", "administracao", "media"),
+  type(
+    "equipamento",
+    "Equipamento público danificado",
+    "servicos",
+    "equipamento",
+    "administracao",
+    "media",
+  ),
 
   // OUTROS
   type("denuncia", "Denúncia", "outros", "denuncia", "administracao", "media"),
-  type("manutencao", "Solicitação de manutenção", "outros", "solicitacao", "administracao", "baixa"),
+  type(
+    "manutencao",
+    "Solicitação de manutenção",
+    "outros",
+    "solicitacao",
+    "administracao",
+    "baixa",
+  ),
   type("outra", "Outra ocorrência", "outros", "outro", "administracao", "baixa"),
 ];
 
@@ -218,17 +281,16 @@ export function routeOccurrence(typeId: string): {
  * Classificação local (regras) — ponto de extensão para IA no futuro.
  * Nenhum serviço externo é chamado nesta etapa.
  */
-export function classifyOccurrence(input: {
-  typeId: string;
-  description: string;
-}): { priority: OccurrencePriority; agency: AgencyId; reason: string } {
+export function classifyOccurrence(input: { typeId: string; description: string }): {
+  priority: OccurrencePriority;
+  agency: AgencyId;
+  reason: string;
+} {
   const base = routeOccurrence(input.typeId);
   const text = input.description.toLowerCase();
 
   const escalate =
-    /(risco|perigo|criança|bloquean|bloqueand|interditad|caído sobre|energizad|desabar)/.test(
-      text,
-    );
+    /(risco|perigo|criança|bloquean|bloqueand|interditad|caído sobre|energizad|desabar)/.test(text);
 
   const priority: OccurrencePriority = escalate
     ? base.priority === "baixa"

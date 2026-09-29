@@ -34,7 +34,8 @@ const RULES: Array<{ id: string; label: string; to: string; patterns: RegExp }> 
     id: "family",
     label: "Família e assistência",
     to: "/jornada/minha-familia",
-    patterns: /(benefíc|benefic|cadúnico|cadunico|bolsa|assistência|assistencia|idoso|criança|crianca)/i,
+    patterns:
+      /(benefíc|benefic|cadúnico|cadunico|bolsa|assistência|assistencia|idoso|criança|crianca)/i,
   },
   {
     id: "work",

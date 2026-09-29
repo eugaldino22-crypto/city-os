@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProtocolosRouteImport } from './routes/protocolos'
 import { Route as JornadaSlugRouteImport } from './routes/jornada.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProtocolosRoute = ProtocolosRouteImport.update({
@@ -31,30 +37,34 @@ const JornadaSlugRoute = JornadaSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/protocolos': typeof ProtocolosRoute
   '/jornada/$slug': typeof JornadaSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/protocolos': typeof ProtocolosRoute
   '/jornada/$slug': typeof JornadaSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/protocolos': typeof ProtocolosRoute
   '/jornada/$slug': typeof JornadaSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/protocolos' | '/jornada/$slug'
+  fullPaths: '/' | '/auth' | '/protocolos' | '/jornada/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/protocolos' | '/jornada/$slug'
-  id: '__root__' | '/' | '/protocolos' | '/jornada/$slug'
+  to: '/' | '/auth' | '/protocolos' | '/jornada/$slug'
+  id: '__root__' | '/' | '/auth' | '/protocolos' | '/jornada/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   ProtocolosRoute: typeof ProtocolosRoute
   JornadaSlugRoute: typeof JornadaSlugRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/protocolos': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   ProtocolosRoute: ProtocolosRoute,
   JornadaSlugRoute: JornadaSlugRoute,
 }

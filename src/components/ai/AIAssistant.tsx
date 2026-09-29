@@ -19,7 +19,9 @@ export function AIAssistant() {
     <section aria-labelledby="assistente-ia" className="card-premium p-5 sm:p-7">
       <div className="flex items-center gap-2 text-primary">
         <Sparkles className="size-5" />
-        <span className="text-xs font-semibold uppercase tracking-[0.14em]">Assistente Gestor.IA</span>
+        <span className="text-xs font-semibold uppercase tracking-[0.14em]">
+          Assistente Gestor.IA
+        </span>
       </div>
 
       <h2 id="assistente-ia" className="mt-3 text-2xl font-semibold sm:text-3xl">

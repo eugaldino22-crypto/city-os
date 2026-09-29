@@ -11,7 +11,10 @@ export const Route = createFileRoute("/jornada/$slug")({
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Jornada indisponível — Gestor.IA" }, { name: "robots", content: "noindex" }],
+        meta: [
+          { title: "Jornada indisponível — Gestor.IA" },
+          { name: "robots", content: "noindex" },
+        ],
       };
     }
     const title = `${loaderData.title} — Gestor.IA`;

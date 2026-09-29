@@ -3,19 +3,10 @@
  * Estrutura preparada para futura integração com backend e órgãos municipais.
  */
 
-export type OccurrencePriority =
-  | "baixa"
-  | "media"
-  | "alta"
-  | "critica";
+export type OccurrencePriority = "baixa" | "media" | "alta" | "critica";
 
 export type OccurrenceStatus =
-  | "recebida"
-  | "em_analise"
-  | "encaminhada"
-  | "em_atendimento"
-  | "resolvida"
-  | "cancelada";
+  "recebida" | "em_analise" | "encaminhada" | "em_atendimento" | "resolvida" | "cancelada";
 
 export type AgencyId =
   | "obras"
@@ -90,13 +81,15 @@ export type OccurrenceLocation = {
 
 export type OccurrenceMedia = {
   kind: "photo" | "video";
-  /** Data URL local (demonstração — nenhuma mídia é enviada a serviços externos). */
-  dataUrl: string;
+  /** URL temporária assinada ou preview local. Nunca é persistida no navegador. */
+  url: string;
+  file?: File;
+  mimeType?: string;
 };
 
 export type Occurrence = {
   id: string;
-  protocol: string;
+  protocol: string | null;
   typeId: string;
   description: string;
   media: OccurrenceMedia | null;
@@ -106,6 +99,11 @@ export type Occurrence = {
   status: OccurrenceStatus;
   confirmations: number;
   createdAt: string;
-  /** Marca claramente registros de demonstração. */
-  demo: boolean;
+};
+
+export type NewOccurrenceInput = {
+  typeId: string;
+  description: string;
+  media: OccurrenceMedia | null;
+  location: OccurrenceLocation;
 };

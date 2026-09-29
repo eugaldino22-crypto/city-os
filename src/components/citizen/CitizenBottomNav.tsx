@@ -1,10 +1,4 @@
-import {
-  Home,
-  ListChecks,
-  Plus,
-  Star,
-  UserRound,
-} from "lucide-react";
+import { Home, ListChecks, Plus, Star, UserRound } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { QuickActions } from "@/components/citizen/QuickActions";
 
@@ -54,9 +48,7 @@ export function CitizenBottomNav() {
           >
             <Home className="size-7" strokeWidth={2} />
 
-            <span className="text-[10px] font-semibold truncate sm:text-sm">
-              Início
-            </span>
+            <span className="text-[10px] font-semibold truncate sm:text-sm">Início</span>
           </Link>
 
           {/* SOLICITAÇÕES */}
@@ -66,9 +58,7 @@ export function CitizenBottomNav() {
           >
             <ListChecks className="size-7" strokeWidth={2} />
 
-            <span className="text-[10px] font-medium truncate sm:text-sm">
-              Solicitações
-            </span>
+            <span className="text-[10px] font-medium truncate sm:text-sm">Solicitações</span>
           </Link>
 
           {/* NOVA SOLICITAÇÃO */}
@@ -119,9 +109,7 @@ export function CitizenBottomNav() {
           >
             <Star className="size-7" strokeWidth={2} />
 
-            <span className="text-[10px] font-medium truncate sm:text-sm">
-              Avaliações
-            </span>
+            <span className="text-[10px] font-medium truncate sm:text-sm">Avaliações</span>
           </Link>
 
           {/* PERFIL */}
@@ -131,9 +119,7 @@ export function CitizenBottomNav() {
           >
             <UserRound className="size-7" strokeWidth={2} />
 
-            <span className="text-[10px] font-medium truncate sm:text-sm">
-              Perfil
-            </span>
+            <span className="text-[10px] font-medium truncate sm:text-sm">Perfil</span>
           </Link>
         </div>
       </div>

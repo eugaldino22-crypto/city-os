@@ -1,121 +1,48 @@
-import { useCallback, useSyncExternalStore } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { classifyOccurrence } from "./catalog";
-import { createDemoOccurrences } from "./demo";
-import type { Occurrence, OccurrenceLocation, OccurrenceMedia } from "./types";
+import { useAuth } from "@/features/auth/AuthProvider";
+import { confirmOccurrence, createOccurrence, listMyOccurrences } from "@/services/occurrences";
 
-const STORAGE_KEY = "cityos-occurrences-v1";
+import type { NewOccurrenceInput } from "./types";
 
-let occurrences: Occurrence[] | null = null;
-const listeners = new Set<() => void>();
+const occurrenceQueryKey = (citizenId?: string) => ["occurrences", citizenId] as const;
 
-function read(): Occurrence[] {
-  if (occurrences) return occurrences;
+/**
+ * The database is the sole source of truth. React Query only caches the latest
+ * server response; it never persists occurrences in browser storage.
+ */
+export function useOccurrences() {
+  const { user, loading, configured } = useAuth();
 
-  if (typeof window === "undefined") {
-    occurrences = [];
-    return occurrences;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-
-    if (raw) {
-      occurrences = JSON.parse(raw) as Occurrence[];
-      return occurrences;
-    }
-  } catch {
-    /* ignora storage inválido */
-  }
-
-  occurrences = createDemoOccurrences();
-  persist();
-
-  return occurrences;
-}
-
-function persist() {
-  if (typeof window === "undefined" || !occurrences) return;
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(occurrences));
-  } catch {
-    /* storage indisponível */
-  }
-}
-
-function emit() {
-  persist();
-  listeners.forEach((listener) => listener());
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
-function nextProtocol(list: Occurrence[]) {
-  const year = new Date().getFullYear();
-  const sequence = list.length + 1;
-
-  return `#${year}-${String(sequence).padStart(6, "0")}`;
-}
-
-export type NewOccurrenceInput = {
-  typeId: string;
-  description: string;
-  media: OccurrenceMedia | null;
-  location: OccurrenceLocation;
-};
-
-export function addOccurrence(input: NewOccurrenceInput): Occurrence {
-  const list = read();
-  const classification = classifyOccurrence({
-    typeId: input.typeId,
-    description: input.description,
+  return useQuery({
+    queryKey: occurrenceQueryKey(user?.id),
+    queryFn: listMyOccurrences,
+    enabled: configured && !loading && Boolean(user),
   });
-
-  const occurrence: Occurrence = {
-    id: `occ-${Date.now()}-${Math.round(Math.random() * 1e6)}`,
-    protocol: nextProtocol(list),
-    typeId: input.typeId,
-    description: input.description.trim(),
-    media: input.media,
-    location: input.location,
-    priority: classification.priority,
-    agency: classification.agency,
-    status: "recebida",
-    confirmations: 0,
-    createdAt: new Date().toISOString(),
-    demo: false,
-  };
-
-  occurrences = [occurrence, ...list];
-  emit();
-
-  return occurrence;
-}
-
-export function confirmOccurrence(id: string) {
-  const list = read();
-
-  occurrences = list.map((item) =>
-    item.id === id ? { ...item, confirmations: item.confirmations + 1 } : item,
-  );
-
-  emit();
-}
-
-const EMPTY: Occurrence[] = [];
-
-export function useOccurrences(): Occurrence[] {
-  return useSyncExternalStore(
-    subscribe,
-    () => read(),
-    () => EMPTY,
-  );
 }
 
 export function useAddOccurrence() {
-  return useCallback((input: NewOccurrenceInput) => addOccurrence(input), []);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: NewOccurrenceInput) => createOccurrence(input),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: occurrenceQueryKey(user?.id),
+      }),
+  });
+}
+
+export function useConfirmOccurrence() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: confirmOccurrence,
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: occurrenceQueryKey(user?.id),
+      }),
+  });
 }

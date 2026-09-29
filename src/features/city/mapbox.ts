@@ -4,9 +4,7 @@
  */
 export const MAPBOX_TOKEN: string =
   (import.meta.env["VITE_MAPBOX_TOKEN"] as string | undefined) ??
-  (import.meta.env["VITE_LOVABLE_CONNECTOR_MAPBOX_PUBLIC_TOKEN"] as
-    | string
-    | undefined) ??
+  (import.meta.env["VITE_LOVABLE_CONNECTOR_MAPBOX_PUBLIC_TOKEN"] as string | undefined) ??
   "";
 
 export const MAPBOX_STYLE = "mapbox://styles/mapbox/streets-v12";

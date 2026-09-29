@@ -1,9 +1,4 @@
-import {
-  FileText,
-  ListChecks,
-  MessageCircleWarning,
-  Mail,
-} from "lucide-react";
+import { FileText, ListChecks, MessageCircleWarning, Mail } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const ACTIONS = [

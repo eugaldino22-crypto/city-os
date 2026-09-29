@@ -12,10 +12,7 @@ export type AddressInfo = {
  * Reverse geocoding leve (BigDataCloud, API aberta) usado no registro de ocorrências.
  * Não substitui o serviço de município já existente.
  */
-export async function reverseAddress({
-  latitude,
-  longitude,
-}: Coordinates): Promise<AddressInfo> {
+export async function reverseAddress({ latitude, longitude }: Coordinates): Promise<AddressInfo> {
   const url =
     `https://api.bigdatacloud.net/data/reverse-geocode-client` +
     `?latitude=${latitude}&longitude=${longitude}&localityLanguage=pt`;
@@ -39,15 +36,11 @@ export async function reverseAddress({
 
   const administrative = data.localityInfo?.administrative ?? [];
 
-  const neighborhood =
-    administrative.find((item) => (item.adminLevel ?? 0) >= 9)?.name ?? null;
+  const neighborhood = administrative.find((item) => (item.adminLevel ?? 0) >= 9)?.name ?? null;
 
   return {
     municipality: data.city || data.locality || null,
-    state:
-      data.principalSubdivisionCode?.split("-")[1] ||
-      data.principalSubdivision ||
-      null,
+    state: data.principalSubdivisionCode?.split("-")[1] || data.principalSubdivision || null,
     neighborhood,
     locality: data.locality || null,
     address: null,

@@ -17,9 +17,7 @@ export function Logo({
         aria-hidden
         className={cn(
           "grid size-8 place-items-center rounded-lg font-bold",
-          variant === "onDark"
-            ? "bg-accent text-accent-foreground"
-            : "surface-institutional",
+          variant === "onDark" ? "bg-accent text-accent-foreground" : "surface-institutional",
         )}
       >
         G

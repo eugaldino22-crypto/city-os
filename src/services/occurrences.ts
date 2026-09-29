@@ -1,9 +1,9 @@
 import type { Database } from "@/types/database";
 import { supabase } from "@/lib/supabase";
 
-import { classifyOccurrence } from "@/features/occurrences/catalog";
 import type {
   AgencyId,
+  MunicipalOccurrence,
   NewOccurrenceInput,
   Occurrence,
   OccurrenceMedia,
@@ -15,13 +15,6 @@ type OccurrenceRow = Database["public"]["Tables"]["occurrences"]["Row"];
 type ProtocolRow = Database["public"]["Tables"]["protocols"]["Row"];
 type MediaRow = Database["public"]["Tables"]["occurrence_media"]["Row"];
 type MunicipalityRow = Database["public"]["Tables"]["municipalities"]["Row"];
-
-const priorityToDatabase: Record<OccurrencePriority, string> = {
-  baixa: "low",
-  media: "medium",
-  alta: "high",
-  critica: "critical",
-};
 
 const priorityFromDatabase: Record<string, OccurrencePriority> = {
   low: "baixa",
@@ -80,8 +73,12 @@ function toStatus(status: string): OccurrenceStatus {
   return mapped;
 }
 
-function toAgency(agency: string | null): AgencyId {
-  if (!agency || !agencies.has(agency as AgencyId)) {
+function toAgency(agency: string | null): AgencyId | null {
+  if (agency === null) {
+    return null;
+  }
+
+  if (!agencies.has(agency as AgencyId)) {
     throw new Error("A ocorrência possui um órgão responsável inválido no banco de dados.");
   }
 
@@ -181,6 +178,29 @@ export async function listMyOccurrences(): Promise<Occurrence[]> {
   return Promise.all(rows.map((row) => toOccurrence(row, protocols, media, municipalities)));
 }
 
+/**
+ * Public-to-the-municipality map data comes only from the sanitized RPC. It
+ * cannot contain private occurrence fields because they are not selected by
+ * the function and the base occurrences table remains ownership-scoped.
+ */
+export async function listMunicipalOccurrences(): Promise<MunicipalOccurrence[]> {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc("list_municipal_occurrence_map", {});
+
+  if (error) throw error;
+
+  return (data ?? []).map((occurrence) => ({
+    id: occurrence.occurrence_id,
+    typeId: occurrence.type_id,
+    latitude: occurrence.latitude,
+    longitude: occurrence.longitude,
+    priority: toPriority(occurrence.priority),
+    status: toStatus(occurrence.status),
+    confirmations: occurrence.confirmations_count,
+    reportedAt: occurrence.reported_at,
+  }));
+}
+
 function extensionFor(file: File) {
   const extensions: Record<string, string> = {
     "image/jpeg": "jpg",
@@ -244,10 +264,6 @@ export async function createOccurrence(input: NewOccurrenceInput): Promise<Creat
   if (userError) throw userError;
   if (!user) throw new Error("Entre na sua conta para criar uma ocorrência.");
 
-  const classification = classifyOccurrence({
-    typeId: input.typeId,
-    description: input.description,
-  });
   const { data, error } = await client.rpc("create_occurrence", {
     p_type_id: input.typeId,
     p_description: input.description.trim(),
@@ -256,8 +272,6 @@ export async function createOccurrence(input: NewOccurrenceInput): Promise<Creat
     p_address: input.location.address ?? input.location.manualLabel,
     p_neighborhood: input.location.neighborhood,
     p_locality: input.location.locality,
-    p_priority: priorityToDatabase[classification.priority],
-    p_agency: classification.agency,
   });
 
   if (error) throw error;
@@ -282,8 +296,8 @@ export async function createOccurrence(input: NewOccurrenceInput): Promise<Creat
       description: input.description.trim(),
       media: savedMedia,
       location: input.location,
-      priority: classification.priority,
-      agency: classification.agency,
+      priority: toPriority(created.priority),
+      agency: toAgency(created.agency),
       status: "recebida",
       confirmations: 0,
       createdAt: created.created_at,

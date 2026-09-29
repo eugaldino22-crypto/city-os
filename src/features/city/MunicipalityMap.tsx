@@ -11,8 +11,8 @@ import {
   STATUS_LABELS,
   getOccurrenceType,
 } from "@/features/occurrences/catalog";
-import type { Occurrence } from "@/features/occurrences/types";
-import { resolveCoordinates, timeAgo } from "@/features/occurrences/utils";
+import type { MunicipalOccurrence } from "@/features/occurrences/types";
+import { timeAgo } from "@/features/occurrences/utils";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 type MunicipalityMapProps = {
@@ -20,7 +20,7 @@ type MunicipalityMapProps = {
   citizenLatitude?: number | null;
   citizenLongitude?: number | null;
   title: string;
-  occurrences?: Occurrence[];
+  occurrences?: MunicipalOccurrence[];
 };
 
 export function MunicipalityMap({
@@ -122,16 +122,7 @@ export function MunicipalityMap({
     });
     markersRef.current = [];
 
-    const center = {
-      latitude: municipality.latitude,
-      longitude: municipality.longitude,
-    };
-
     occurrences.forEach((occurrence) => {
-      const coords = resolveCoordinates(occurrence, center);
-
-      if (!coords) return;
-
       const occurrenceType = getOccurrenceType(occurrence.typeId);
       const Icon = OCCURRENCE_ICONS[occurrenceType.icon];
       const color = PRIORITY_COLORS[occurrence.priority];
@@ -164,12 +155,12 @@ export function MunicipalityMap({
         `<div style="font-family: inherit; min-width: 150px">
            <strong style="display:block;font-size:12px">${escapeHtml(occurrenceType.label)}</strong>
            <span style="display:block;font-size:11px;color:${color}">Prioridade ${PRIORITY_LABELS[occurrence.priority].toLowerCase()}</span>
-           <span style="display:block;font-size:11px;color:#5a6b60">${escapeHtml(STATUS_LABELS[occurrence.status])} · ${escapeHtml(timeAgo(occurrence.createdAt))}</span>
+           <span style="display:block;font-size:11px;color:#5a6b60">${escapeHtml(STATUS_LABELS[occurrence.status])} · ${escapeHtml(timeAgo(occurrence.reportedAt))}</span>
          </div>`,
       );
 
       const marker = new mapboxgl.Marker({ element })
-        .setLngLat([coords.longitude, coords.latitude])
+        .setLngLat([occurrence.longitude, occurrence.latitude])
         .setPopup(popup)
         .addTo(map);
 

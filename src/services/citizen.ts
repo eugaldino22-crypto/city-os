@@ -3,6 +3,7 @@ import type { Database } from "@/types/database";
 
 export type CitizenProfile = Database["public"]["Tables"]["citizen_profiles"]["Row"];
 export type ActiveMunicipality = Database["public"]["Tables"]["municipalities"]["Row"];
+export type CitizenProfileUpdate = Pick<CitizenProfile, "full_name" | "phone" | "avatar_path">;
 
 function requireSupabase() {
   if (!supabase) {
@@ -84,12 +85,9 @@ export async function ensureCurrentCitizenProfile(
   return data;
 }
 
-export async function updateCurrentCitizenProfile(input: {
-  full_name?: string | null;
-  phone?: string | null;
-  avatar_path?: string | null;
-  municipality_id?: string | null;
-}): Promise<CitizenProfile> {
+export async function updateCurrentCitizenProfile(
+  input: Partial<CitizenProfileUpdate>,
+): Promise<CitizenProfile> {
   const client = requireSupabase();
 
   const {
@@ -107,11 +105,8 @@ export async function updateCurrentCitizenProfile(input: {
 
   const { data, error } = await client
     .from("citizen_profiles")
-    .upsert({
-      id: user.id,
-      ...input,
-      updated_at: new Date().toISOString(),
-    })
+    .update(input)
+    .eq("id", user.id)
     .select("*")
     .single();
 
@@ -120,6 +115,32 @@ export async function updateCurrentCitizenProfile(input: {
   }
 
   return data;
+}
+
+/**
+ * The only browser-accessible municipality mutation. The database allows it
+ * once, validates that the municipality is active, and derives the citizen
+ * from auth.uid(). GPS is intentionally not an input to this operation.
+ */
+export async function linkCurrentCitizenMunicipality(
+  municipalityId: string,
+): Promise<CitizenProfile> {
+  const client = requireSupabase();
+  const { error } = await client.rpc("link_current_citizen_municipality", {
+    p_municipality_id: municipalityId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const profile = await getCurrentCitizenProfile();
+
+  if (!profile) {
+    throw new Error("O perfil do cidadão não foi encontrado após o vínculo do município.");
+  }
+
+  return profile;
 }
 
 export async function listActiveMunicipalities(): Promise<ActiveMunicipality[]> {

@@ -1,6 +1,17 @@
 # Auditoria — `feat/cityos-real-data`
 
 Data: 2026-09-29
+
+> As seções abaixo preservam a auditoria inicial, feita antes das Fases 1A e 1B. A atualização baseada em execução local real vem primeiro e substitui os achados que ela cobre.
+
+## Atualização comprovada — Fases 1B e 1C
+
+- A migration base e a migration forward-only de hardening foram aplicadas em banco Supabase local limpo, nessa ordem.
+- A prova local A/B em `supabase/tests/phase_1c_tenancy_rls.sql` passou integralmente e fez rollback das fixtures.
+- A prova confirmou RLS de ownership para perfis, protocolos e ocorrências; vínculo municipal único; derivação de cidadão/tenant; isolamento de feed/eventos; e projeção municipal sanitizada do mapa.
+- A prova encontrou e corrigiu uma ambiguidade de `RETURNING` na RPC `create_occurrence`. O banco foi resetado e todos os testes passaram após a correção.
+- `npm run typecheck`, `npm run lint`, `npm run build` e `git diff --check` foram reexecutados após a correção; os resultados detalhados estão em `docs/SECURITY.md`.
+- Não houve aplicação de migration, consulta ou mutação no Supabase remoto; não houve commit ou push.
 Escopo: leitura do código, diff staged, migration e verificações locais. Nenhuma migration remota, alteração de ambiente, commit, push ou correção foi executada.
 
 ## Estado verificado

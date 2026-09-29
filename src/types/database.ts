@@ -297,12 +297,64 @@ export type Database = {
           p_address?: string | null;
           p_neighborhood?: string | null;
           p_locality?: string | null;
-          p_priority?: string;
-          p_agency?: string | null;
         };
-        Returns: { occurrence_id: string; protocol_code: string; created_at: string }[];
+        Returns: {
+          occurrence_id: string;
+          protocol_code: string;
+          priority: string;
+          agency: string | null;
+          created_at: string;
+        }[];
       };
       confirm_occurrence: { Args: { p_occurrence_id: string }; Returns: number };
+      current_citizen_municipality_id: { Args: Record<string, never>; Returns: string | null };
+      link_current_citizen_municipality: {
+        Args: { p_municipality_id: string };
+        Returns: string;
+      };
+      list_municipal_city_feed: {
+        Args: { p_municipality_id?: string | null };
+        Returns: {
+          id: string;
+          kind: string;
+          title: string;
+          description: string | null;
+          image_path: string | null;
+          link_url: string | null;
+          published_at: string | null;
+          starts_at: string | null;
+          ends_at: string | null;
+          created_at: string;
+        }[];
+      };
+      list_municipal_city_events: {
+        Args: { p_municipality_id?: string | null };
+        Returns: {
+          id: string;
+          title: string;
+          description: string | null;
+          location: string | null;
+          starts_at: string;
+          ends_at: string | null;
+          image_path: string | null;
+          link_url: string | null;
+          published_at: string | null;
+          created_at: string;
+        }[];
+      };
+      list_municipal_occurrence_map: {
+        Args: Record<string, never>;
+        Returns: {
+          occurrence_id: string;
+          type_id: string;
+          latitude: number;
+          longitude: number;
+          priority: string;
+          status: string;
+          confirmations_count: number;
+          reported_at: string;
+        }[];
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

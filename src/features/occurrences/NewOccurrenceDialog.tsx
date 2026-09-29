@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Camera, Check, Image as ImageIcon, Trash2, Video } from "lucide-react";
 
 import {
@@ -12,14 +12,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 import {
-  AGENCIES,
   OCCURRENCE_GROUPS,
   OCCURRENCE_ICONS,
   OCCURRENCE_TYPES,
   PRIORITY_COLORS,
   PRIORITY_LABELS,
   STATUS_LABELS,
-  classifyOccurrence,
   getOccurrenceType,
 } from "./catalog";
 import { useAddOccurrence } from "./store";
@@ -76,11 +74,6 @@ export function NewOccurrenceDialog({
   }, [open]);
 
   const occurrenceType = typeId ? getOccurrenceType(typeId) : null;
-
-  const classification = useMemo(
-    () => (typeId ? classifyOccurrence({ typeId, description }) : null),
-    [typeId, description],
-  );
 
   function handleFile(file: File | undefined, kind: OccurrenceMedia["kind"]) {
     if (!file) return;
@@ -331,7 +324,7 @@ export function NewOccurrenceDialog({
           ) : null}
 
           {/* 5. REVISÃO */}
-          {step === "revisao" && occurrenceType && classification ? (
+          {step === "revisao" && occurrenceType ? (
             <div className="space-y-4">
               <div className="card-premium space-y-3 p-4">
                 <Row label="Categoria" value={occurrenceType.label} />
@@ -346,17 +339,11 @@ export function NewOccurrenceDialog({
                       : "Não informado")
                   }
                 />
-                <Row
-                  label="Prioridade sugerida"
-                  value={PRIORITY_LABELS[classification.priority]}
-                  color={PRIORITY_COLORS[classification.priority]}
-                />
-                <Row label="Encaminhamento" value={AGENCIES[classification.agency]} />
               </div>
 
               <p className="text-[11px] leading-relaxed text-muted-foreground">
-                Classificação preliminar por regras locais, preparada para análise por IA em etapas
-                futuras. O registro não aciona automaticamente serviços de emergência.
+                A prioridade e o encaminhamento inicial são definidos no servidor. O registro não
+                aciona automaticamente serviços de emergência.
               </p>
 
               {submissionError ? (

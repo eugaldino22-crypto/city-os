@@ -183,7 +183,9 @@ export function OccurrenceCard({
               {STATUS_LABELS[occurrence.status]}
             </span>
 
-            <span className="text-muted-foreground">{AGENCIES[occurrence.agency]}</span>
+            <span className="text-muted-foreground">
+              {occurrence.agency ? AGENCIES[occurrence.agency] : "Sem encaminhamento"}
+            </span>
           </div>
 
           <button

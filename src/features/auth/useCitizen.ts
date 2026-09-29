@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./AuthProvider";
 import {
   ensureCurrentCitizenProfile,
+  linkCurrentCitizenMunicipality,
   listActiveMunicipalities,
   updateCurrentCitizenProfile,
 } from "@/services/citizen";
@@ -25,6 +26,19 @@ export function useUpdateCitizenProfile() {
     mutationFn: updateCurrentCitizenProfile,
     onSuccess: (profile) => {
       queryClient.setQueryData(["citizen-profile", user?.id], profile);
+    },
+  });
+}
+
+export function useLinkCurrentCitizenMunicipality() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: linkCurrentCitizenMunicipality,
+    onSuccess: (profile) => {
+      queryClient.setQueryData(["citizen-profile", user?.id], profile);
+      void queryClient.invalidateQueries({ queryKey: ["municipal-occurrences", user?.id] });
     },
   });
 }

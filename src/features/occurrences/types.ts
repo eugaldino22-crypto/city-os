@@ -95,10 +95,26 @@ export type Occurrence = {
   media: OccurrenceMedia | null;
   location: OccurrenceLocation;
   priority: OccurrencePriority;
-  agency: AgencyId;
+  agency: AgencyId | null;
   status: OccurrenceStatus;
   confirmations: number;
   createdAt: string;
+};
+
+/**
+ * Deliberately small projection for the municipal map. It is returned by a
+ * tenant-scoped RPC and must never be replaced with the private Occurrence
+ * model, which contains citizen-owned details and media.
+ */
+export type MunicipalOccurrence = {
+  id: string;
+  typeId: string;
+  latitude: number;
+  longitude: number;
+  priority: OccurrencePriority;
+  status: OccurrenceStatus;
+  confirmations: number;
+  reportedAt: string;
 };
 
 export type NewOccurrenceInput = {

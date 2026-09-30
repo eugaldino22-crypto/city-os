@@ -1,9 +1,28 @@
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/types/database";
+import { updateCurrentCitizenProfileServer } from "./citizen.server";
 
 export type CitizenProfile = Database["public"]["Tables"]["citizen_profiles"]["Row"];
 export type ActiveMunicipality = Database["public"]["Tables"]["municipalities"]["Row"];
 export type CitizenProfileUpdate = Pick<CitizenProfile, "full_name" | "phone" | "avatar_path">;
+
+export const citizenAvatarBucket = "citizen-avatars";
+export const citizenAvatarMaxBytes = 5 * 1024 * 1024;
+
+const avatarMimeToExtension = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+} as const;
+
+type AvatarMimeType = keyof typeof avatarMimeToExtension;
+
+export class AuthenticationRequiredError extends Error {
+  constructor() {
+    super("Sua sessão expirou. Entre novamente para continuar.");
+    this.name = "AuthenticationRequiredError";
+  }
+}
 
 function requireSupabase() {
   if (!supabase) {
@@ -13,21 +32,50 @@ function requireSupabase() {
   return supabase;
 }
 
-export async function getCurrentCitizenProfile(): Promise<CitizenProfile | null> {
+async function requireAuthenticatedCitizen() {
   const client = requireSupabase();
-
   const {
     data: { user },
-    error: userError,
+    error,
   } = await client.auth.getUser();
 
-  if (userError) {
-    throw userError;
+  if (error || !user) {
+    throw new AuthenticationRequiredError();
   }
 
-  if (!user) {
-    return null;
+  return { client, user };
+}
+
+function isAvatarMimeType(type: string): type is AvatarMimeType {
+  return Object.prototype.hasOwnProperty.call(avatarMimeToExtension, type);
+}
+
+export function validateCitizenAvatarFile(file: File) {
+  if (!isAvatarMimeType(file.type)) {
+    throw new Error("Selecione uma imagem JPG, PNG ou WebP.");
   }
+
+  if (file.size <= 0) {
+    throw new Error("A imagem selecionada está vazia.");
+  }
+
+  if (file.size > citizenAvatarMaxBytes) {
+    throw new Error("A imagem deve ter no máximo 5 MB.");
+  }
+}
+
+function getCurrentCitizenAvatarPath(citizenId: string, mimeType: AvatarMimeType) {
+  return `${citizenId}/avatar.${avatarMimeToExtension[mimeType]}`;
+}
+
+function isCurrentCitizenAvatarPath(citizenId: string, avatarPath: string) {
+  return ["jpg", "jpeg", "png", "webp"].some(
+    (extension) => avatarPath === `${citizenId}/avatar.${extension}`,
+  );
+}
+
+export async function getCurrentCitizenProfile(): Promise<CitizenProfile | null> {
+  const { client, user } = await requireAuthenticatedCitizen();
 
   const { data, error } = await client
     .from("citizen_profiles")
@@ -45,20 +93,7 @@ export async function getCurrentCitizenProfile(): Promise<CitizenProfile | null>
 export async function ensureCurrentCitizenProfile(
   initialName?: string | null,
 ): Promise<CitizenProfile | null> {
-  const client = requireSupabase();
-
-  const {
-    data: { user },
-    error: userError,
-  } = await client.auth.getUser();
-
-  if (userError) {
-    throw userError;
-  }
-
-  if (!user) {
-    return null;
-  }
+  const { client, user } = await requireAuthenticatedCitizen();
 
   const existing = await getCurrentCitizenProfile();
 
@@ -88,33 +123,73 @@ export async function ensureCurrentCitizenProfile(
 export async function updateCurrentCitizenProfile(
   input: Partial<CitizenProfileUpdate>,
 ): Promise<CitizenProfile> {
-  const client = requireSupabase();
+  // This client-side check produces a clear redirectable error for an expired
+  // cookie. The mutation itself is still re-authenticated by the same-origin
+  // server function, which derives the profile id from auth.getUser().
+  await requireAuthenticatedCitizen();
 
-  const {
-    data: { user },
-    error: userError,
-  } = await client.auth.getUser();
+  try {
+    return await updateCurrentCitizenProfileServer({ data: input });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      /AUTHENTICATION_REQUIRED|Auth session missing|JWT expired/i.test(error.message)
+    ) {
+      throw new AuthenticationRequiredError();
+    }
 
-  if (userError) {
-    throw userError;
+    throw error;
   }
+}
 
-  if (!user) {
-    throw new Error("Usuário não autenticado.");
-  }
+export async function uploadCurrentCitizenAvatar(file: File): Promise<CitizenProfile> {
+  validateCitizenAvatarFile(file);
 
-  const { data, error } = await client
-    .from("citizen_profiles")
-    .update(input)
-    .eq("id", user.id)
-    .select("*")
-    .single();
+  const { client, user } = await requireAuthenticatedCitizen();
+  const path = getCurrentCitizenAvatarPath(user.id, file.type as AvatarMimeType);
+  const { error } = await client.storage.from(citizenAvatarBucket).upload(path, file, {
+    upsert: true,
+    contentType: file.type,
+    cacheControl: "3600",
+  });
 
   if (error) {
     throw error;
   }
 
-  return data;
+  // Only the storage path is persisted. The URL is ephemeral and generated
+  // below with a signed request for the authenticated owner.
+  return updateCurrentCitizenProfile({ avatar_path: path });
+}
+
+export async function getCurrentCitizenAvatarUrl(
+  avatarPath: string | null,
+  updatedAt: string | null | undefined,
+): Promise<string | null> {
+  if (!avatarPath) {
+    return null;
+  }
+
+  const { client, user } = await requireAuthenticatedCitizen();
+
+  if (!isCurrentCitizenAvatarPath(user.id, avatarPath)) {
+    throw new Error("O caminho do avatar não pertence ao cidadão autenticado.");
+  }
+
+  const { data, error } = await client.storage
+    .from(citizenAvatarBucket)
+    .createSignedUrl(avatarPath, 60 * 60);
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data?.signedUrl) {
+    throw new Error("Não foi possível gerar uma URL segura para o avatar.");
+  }
+
+  const version = updatedAt ? `&v=${encodeURIComponent(updatedAt)}` : "";
+  return `${data.signedUrl}${version}`;
 }
 
 /**

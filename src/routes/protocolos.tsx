@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { RequireAuthenticatedCitizen } from "@/features/auth/RequireAuthenticatedCitizen";
 import { ProtocolsOverview } from "@/features/protocols/ProtocolsOverview";
 
 const TITLE = "Meus Protocolos — Gestor.IA";
@@ -20,17 +21,19 @@ export const Route = createFileRoute("/protocolos")({
 
 function ProtocolsPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <Link
-        to="/"
-        className="focus-ring inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-      >
-        <ArrowLeft className="size-4" />
-        Voltar
-      </Link>
-      <div className="mt-6">
-        <ProtocolsOverview />
+    <RequireAuthenticatedCitizen>
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <Link
+          to="/"
+          className="focus-ring inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+        >
+          <ArrowLeft className="size-4" />
+          Voltar
+        </Link>
+        <div className="mt-6">
+          <ProtocolsOverview />
+        </div>
       </div>
-    </div>
+    </RequireAuthenticatedCitizen>
   );
 }

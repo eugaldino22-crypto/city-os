@@ -3,7 +3,12 @@ import { Bell, CloudSun, LocateFixed, Radio, Search } from "lucide-react";
 
 import { Logo } from "@/components/shared/Logo";
 import { CitizenProfileMenu } from "@/components/citizen/CitizenProfileMenu";
-import { useCitizenProfile, useUpdateCitizenProfile } from "@/features/auth/useCitizen";
+import {
+  useCitizenAvatarUrl,
+  useCitizenProfile,
+  useUpdateCitizenProfile,
+  useUploadCitizenAvatar,
+} from "@/features/auth/useCitizen";
 import { useCityContext } from "@/hooks/useCityContext";
 
 function greeting(date = new Date()) {
@@ -26,7 +31,9 @@ export function CitizenHeader({
 }) {
   const city = useCityContext();
   const { data: profile } = useCitizenProfile();
+  const avatar = useCitizenAvatarUrl(profile);
   const updateProfile = useUpdateCitizenProfile();
+  const uploadAvatar = useUploadCitizenAvatar();
   const profileName = profile?.full_name?.trim() || citizenName || "Cidadão";
 
   /*
@@ -48,8 +55,19 @@ export function CitizenHeader({
 
   const weatherDescription = city.weather?.description || "Clima indisponível";
 
-  async function handleProfileChange(profileInput: { name: string }) {
-    await updateProfile.mutateAsync({ full_name: profileInput.name });
+  async function handleProfileChange(profileInput: {
+    name: string;
+    phone: string;
+    avatarFile: File | null;
+  }) {
+    if (profileInput.avatarFile) {
+      await uploadAvatar.mutateAsync(profileInput.avatarFile);
+    }
+
+    await updateProfile.mutateAsync({
+      full_name: profileInput.name,
+      phone: profileInput.phone.trim() || null,
+    });
   }
 
   return (
@@ -76,9 +94,12 @@ export function CitizenHeader({
 
             <CitizenProfileMenu
               citizenName={profileName}
+              citizenPhone={profile?.phone ?? ""}
               cityName={locationLabel}
+              avatarUrl={avatar.data ?? null}
               onProfileChange={handleProfileChange}
-              profileSaving={updateProfile.isPending}
+              profileSaving={updateProfile.isPending || uploadAvatar.isPending}
+              avatarUploading={uploadAvatar.isPending}
               notificationsOpen={notificationsOpen}
               onNotificationsOpenChange={setNotificationsOpen}
             />

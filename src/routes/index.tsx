@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CitizenHeader } from "@/components/citizen/CitizenHeader";
 import { CitizenBottomNav } from "@/components/citizen/CitizenBottomNav";
 import { JourneyGrid } from "@/components/citizen/JourneyGrid";
+import { RequireAuthenticatedCitizen } from "@/features/auth/RequireAuthenticatedCitizen";
 
 import { AIAssistant } from "@/components/ai/AIAssistant";
 
@@ -33,42 +34,44 @@ function CitizenHome() {
   const [query, setQuery] = useState("");
 
   return (
-    <div className="relative isolate min-h-screen bg-background pb-[300px] sm:pb-[290px]">
-      <CitizenHeader query={query} onQueryChange={setQuery} />
+    <RequireAuthenticatedCitizen>
+      <div className="relative isolate min-h-screen bg-background pb-[300px] sm:pb-[290px]">
+        <CitizenHeader query={query} onQueryChange={setQuery} />
 
-      <main className="mx-auto flex max-w-6xl flex-col px-4 sm:px-6">
-        {/* MAPA MUNICIPAL */}
-        <div className="mt-6">
-          <CityLive />
-        </div>
+        <main className="mx-auto flex max-w-6xl flex-col px-4 sm:px-6">
+          {/* MAPA MUNICIPAL */}
+          <div className="mt-6">
+            <CityLive />
+          </div>
 
-        {/* CENTRAL DE OCORRÊNCIAS */}
-        <section className="mt-10">
-          <OccurrenceFeed />
-        </section>
+          {/* CENTRAL DE OCORRÊNCIAS */}
+          <section className="mt-10">
+            <OccurrenceFeed />
+          </section>
 
-        {/* ASSISTENTE IA */}
-        <section className="mt-10">
-          <AIAssistant />
-        </section>
+          {/* ASSISTENTE IA */}
+          <section className="mt-10">
+            <AIAssistant />
+          </section>
 
-        {/* JORNADAS DO CIDADÃO */}
-        <section className="mt-10">
-          <JourneyGrid filter={query} />
-        </section>
+          {/* JORNADAS DO CIDADÃO */}
+          <section className="mt-10">
+            <JourneyGrid filter={query} />
+          </section>
 
-        {/* PREFEITURA CONECTADA */}
-        <section className="mt-10">
-          <ConnectedCityHall />
-        </section>
+          {/* PREFEITURA CONECTADA */}
+          <section className="mt-10">
+            <ConnectedCityHall />
+          </section>
 
-        {/* MEUS PROTOCOLOS */}
-        <section className="mt-10">
-          <ProtocolsOverview compact />
-        </section>
-      </main>
+          {/* MEUS PROTOCOLOS */}
+          <section className="mt-10">
+            <ProtocolsOverview compact />
+          </section>
+        </main>
 
-      <CitizenBottomNav />
-    </div>
+        <CitizenBottomNav />
+      </div>
+    </RequireAuthenticatedCitizen>
   );
 }

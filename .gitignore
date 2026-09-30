@@ -34,3 +34,6 @@ supabase/.temp/
 
 # Supabase CLI local state
 supabase/.branches/
+
+# Local environment backups
+.env.local.backup

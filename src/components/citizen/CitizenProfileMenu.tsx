@@ -1,7 +1,17 @@
-import { useState } from "react";
-import { Bell, ChevronRight, FileText, LogOut, MapPin, Save, Settings, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Bell,
+  Camera,
+  ChevronRight,
+  FileText,
+  LogOut,
+  MapPin,
+  Save,
+  Settings,
+  User,
+} from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import {
   DropdownMenu,
@@ -24,13 +34,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { validateCitizenAvatarFile } from "@/services/citizen";
 import { useNavigate } from "@tanstack/react-router";
 
 type CitizenProfileMenuProps = {
   citizenName?: string;
+  citizenPhone?: string;
   cityName?: string;
-  onProfileChange?: (profile: { name: string }) => Promise<void> | void;
+  avatarUrl?: string | null;
+  onProfileChange?: (profile: {
+    name: string;
+    phone: string;
+    avatarFile: File | null;
+  }) => Promise<void> | void;
   profileSaving?: boolean;
+  avatarUploading?: boolean;
 
   /*
    * Permite que o sino principal do Header
@@ -54,9 +72,12 @@ function getInitials(name: string) {
 
 export function CitizenProfileMenu({
   citizenName = "Cidadão",
+  citizenPhone = "",
   cityName = "Localização atual",
+  avatarUrl = null,
   onProfileChange,
   profileSaving = false,
+  avatarUploading = false,
   notificationsOpen: notificationsOpenProp,
   onNotificationsOpenChange,
 }: CitizenProfileMenuProps) {
@@ -68,6 +89,10 @@ export function CitizenProfileMenu({
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const [editedName, setEditedName] = useState(citizenName);
+  const [editedPhone, setEditedPhone] = useState(citizenPhone);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
@@ -83,19 +108,55 @@ export function CitizenProfileMenu({
   }
 
   const initials = getInitials(citizenName);
+  const displayedAvatarUrl = avatarPreviewUrl ?? avatarUrl;
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+    };
+  }, [avatarPreviewUrl]);
 
   function openProfile() {
     setEditedName(citizenName);
+    setEditedPhone(citizenPhone);
+    setAvatarFile(null);
+    setAvatarPreviewUrl(null);
     setProfileError(null);
     setProfileOpen(true);
   }
 
-  async function saveProfile() {
-    const name = editedName.trim() || "Cidadão";
-    setProfileError(null);
+  function selectAvatar(file: File | null) {
+    if (!file) return;
 
     try {
-      await onProfileChange?.({ name });
+      validateCitizenAvatarFile(file);
+      setProfileError(null);
+      setAvatarFile(file);
+      setAvatarPreviewUrl(URL.createObjectURL(file));
+    } catch (error) {
+      setAvatarFile(null);
+      setAvatarPreviewUrl(null);
+      setProfileError(
+        error instanceof Error ? error.message : "Não foi possível usar esta imagem.",
+      );
+    }
+  }
+
+  async function saveProfile() {
+    const name = editedName.trim();
+    setProfileError(null);
+
+    if (!name) {
+      setProfileError("Informe seu nome completo para salvar o perfil.");
+      return;
+    }
+
+    try {
+      await onProfileChange?.({ name, phone: editedPhone, avatarFile });
+      setAvatarFile(null);
+      setAvatarPreviewUrl(null);
       setProfileOpen(false);
     } catch (error) {
       setProfileError(
@@ -129,6 +190,7 @@ export function CitizenProfileMenu({
             className="focus-ring rounded-full outline-none transition hover:scale-[1.03] active:scale-[0.97]"
           >
             <Avatar className="size-11 overflow-hidden border-2 border-white/80 shadow-lg">
+              {avatarUrl ? <AvatarImage src={avatarUrl} alt="Foto do perfil" /> : null}
               <AvatarFallback className="bg-white text-sm font-bold text-primary-deep">
                 {initials}
               </AvatarFallback>
@@ -144,6 +206,7 @@ export function CitizenProfileMenu({
           <DropdownMenuLabel className="p-3">
             <div className="flex items-center gap-3">
               <Avatar className="size-14 overflow-hidden border border-border">
+                {avatarUrl ? <AvatarImage src={avatarUrl} alt="Foto do perfil" /> : null}
                 <AvatarFallback className="bg-primary text-lg font-bold text-primary-foreground">
                   {initials}
                 </AvatarFallback>
@@ -230,13 +293,41 @@ export function CitizenProfileMenu({
           <div className="space-y-6 py-4">
             <div className="flex flex-col items-center">
               <Avatar className="size-32 overflow-hidden border-4 border-primary/10 shadow-lg">
+                {displayedAvatarUrl ? (
+                  <AvatarImage src={displayedAvatarUrl} alt="Prévia da foto de perfil" />
+                ) : null}
                 <AvatarFallback className="bg-primary text-3xl font-bold text-primary-foreground">
                   {getInitials(editedName)}
                 </AvatarFallback>
               </Avatar>
 
-              <p className="mt-3 text-xs text-muted-foreground">
-                A atualização de foto será disponibilizada com upload seguro em uma próxima etapa.
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={(event) => {
+                  selectAvatar(event.target.files?.[0] ?? null);
+                  event.target.value = "";
+                }}
+                disabled={profileSaving}
+              />
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-4 rounded-xl"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={profileSaving}
+              >
+                <Camera className="mr-2 size-4" />
+                {avatarFile ? "Trocar foto" : "Alterar foto"}
+              </Button>
+
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                JPG, PNG ou WebP, com até 5 MB. A prévia será salva quando você confirmar as
+                alterações.
               </p>
             </div>
 
@@ -252,6 +343,24 @@ export function CitizenProfileMenu({
                 placeholder="Digite seu nome"
                 className="h-12 rounded-xl"
                 maxLength={160}
+                disabled={profileSaving}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="citizen-phone" className="text-sm font-semibold text-foreground">
+                Telefone
+              </label>
+
+              <Input
+                id="citizen-phone"
+                type="tel"
+                autoComplete="tel"
+                value={editedPhone}
+                onChange={(event) => setEditedPhone(event.target.value)}
+                placeholder="(00) 00000-0000"
+                className="h-12 rounded-xl"
+                maxLength={32}
                 disabled={profileSaving}
               />
             </div>
@@ -282,7 +391,11 @@ export function CitizenProfileMenu({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setProfileOpen(false)}
+              onClick={() => {
+                setAvatarFile(null);
+                setAvatarPreviewUrl(null);
+                setProfileOpen(false);
+              }}
               className="rounded-xl"
               disabled={profileSaving}
             >
@@ -296,7 +409,11 @@ export function CitizenProfileMenu({
               disabled={profileSaving}
             >
               <Save className="mr-2 size-4" />
-              {profileSaving ? "Salvando…" : "Salvar alterações"}
+              {avatarUploading
+                ? "Enviando foto…"
+                : profileSaving
+                  ? "Salvando…"
+                  : "Salvar alterações"}
             </Button>
           </DialogFooter>
         </DialogContent>
